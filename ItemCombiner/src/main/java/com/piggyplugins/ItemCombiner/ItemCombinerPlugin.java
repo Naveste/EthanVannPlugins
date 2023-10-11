@@ -191,7 +191,6 @@ public class ItemCombinerPlugin extends Plugin {
         Widget itemTwo = Inventory.search().filter(item -> item.getName().contains(config.itemTwoName())).first().get();
 
         MousePackets.queueClickPacket();
-        MousePackets.queueClickPacket();
         WidgetPackets.queueWidgetOnWidget(itemOne, itemTwo);
     }
 
