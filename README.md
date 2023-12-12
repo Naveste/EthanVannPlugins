@@ -1,1 +1,1 @@
-Plugins released by Ethan Vann
+Free plugins based on Ethan's API.
