@@ -41,50 +41,11 @@ public class AutoTitheFarmOverlay extends Overlay {
     public Dimension render(Graphics2D graphics) {
         graphics.setFont(FontManager.getRunescapeFont());
 
-//        for (WorldPoint point : plugin.area) {
-//            if (point != null) {
-//                renderTile(graphics, LocalPoint.fromWorld(client, point), new Color(55, 214, 238, 0), 1, new Color(24, 141, 213, 47));
-//            }
-//        }
-
         List<TileObject> patches = new ArrayList<>(plugin.emptyPatches);
         for (TileObject tileObject : patches) {
             renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
         }
 
-//        if (plugin.playerDirection() != null) {
-//            renderTile(graphics, LocalPoint.fromWorld(client, plugin.playerDirection()),
-//                    new Color(55, 214, 238, 0), 1, new Color(255, 0, 0, 76));
-//        }
-
         return null;
-    }
-
-    private void renderArea(final Graphics2D graphics, final LocalPoint dest, final Color color,
-                            final double borderWidth, final Color fillColor) {
-        if (dest == null) {
-            return;
-        }
-
-        final Polygon poly = Perspective.getCanvasTileAreaPoly(client, dest, 3);
-
-        if (poly == null) {
-            return;
-        }
-        OverlayUtil.renderPolygon(graphics, poly, color, fillColor, new BasicStroke((float) borderWidth));
-    }
-
-    private void renderTile(final Graphics2D graphics, final LocalPoint dest, final Color color, final double borderWidth, final Color fillColor) {
-        if (dest == null) {
-            return;
-        }
-
-        final Polygon poly = Perspective.getCanvasTilePoly(client, dest);
-
-        if (poly == null) {
-            return;
-        }
-
-        OverlayUtil.renderPolygon(graphics, poly, color, fillColor, new BasicStroke((float) borderWidth));
     }
 }

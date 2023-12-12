@@ -142,7 +142,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         return client.getRealSkillLevel(Skill.FARMING);
     }
 
-    public WorldPoint playerDirection() {
+    private WorldPoint playerDirection() {
         WorldPoint worldPoint = null;
         int playerOrientation = client.getLocalPlayer().getCurrentOrientation();
         WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
