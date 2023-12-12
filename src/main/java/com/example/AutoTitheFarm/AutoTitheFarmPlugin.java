@@ -235,8 +235,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
         int runEnergy = client.getEnergy() / 100;
 
-        // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving()) {
+        // if 20 ticks have passed and no actions have been made within time limit then something went horribly wrong.
+        if (lastActionTimer > (startingNewRun() ? 2 : 20) && !EthanApiPlugin.isMoving()) {
             waitForAction = false;
         }
 
