@@ -126,8 +126,24 @@ public class AutoTitheFarmPlugin extends Plugin {
         needToRestoreRunEnergy = false;
     }
 
+    private boolean gotRequiredItems() {
+        Optional<Widget> seedDibber = Inventory.search().withId(ItemID.SEED_DIBBER).first();
+        Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
+        // generalized and crude checks for now.
+        return getWateringCan() != null && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
+    }
+
     private int getRandomCount() {
         return RandomUtils.nextInt(2, 9);
+    }
+
+    private Widget getWateringCan() {
+        Widget wateringCan = Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElse(null);
+        return wateringCan;
+    }
+
+    private Widget getSeed() {
+        return Inventory.search().nameContains("seed").first().orElse(null);
     }
 
     private boolean isNeedToRefillWateringCan() {
@@ -217,9 +233,12 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private void handleShit() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
-        Widget wateringCan = Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElse(null);
-        Widget seed = Inventory.search().nameContains("seed").first().orElse(null);
         int runEnergy = client.getEnergy() / 100;
+
+        // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
+        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving()) {
+            waitForAction = false;
+        }
 
         if (runEnergy == 100) {
             needToRestoreRunEnergy = false;
@@ -231,7 +250,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
             if (isNeedToRefillWateringCan()) {
                 log.info("Need to refill can");
-                useItemOnObject(wateringCan, waterBarrel.orElse(null));
+                useItemOnObject(getWateringCan(), waterBarrel.orElse(null));
                 return;
             }
 
@@ -251,7 +270,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         List<TileObject> convertedListPatches = new ArrayList<>(emptyPatches);
         if (!emptyPatches.isEmpty() && !isHarvestingPhase && !foundBlightedPlant) {
-            useItemOnObject(seed, convertedListPatches.get(0));
+            useItemOnObject(getSeed(), convertedListPatches.get(0));
             log.info("Planting");
             return;
         }
@@ -276,6 +295,11 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void onGameTick(GameTick event) {
         openHerbBox();
         getLastActionTimer();
+
+        if (!gotRequiredItems() || !isInsideTitheFarm()) {
+            return;
+        }
+
         captureEmptyPatches();
 
         if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
