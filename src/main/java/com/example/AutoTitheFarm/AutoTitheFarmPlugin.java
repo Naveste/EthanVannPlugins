@@ -2,14 +2,17 @@ package com.example.AutoTitheFarm;
 
 import com.example.EthanApiPlugin.Collections.Inventory;
 import com.example.EthanApiPlugin.Collections.TileObjects;
+import com.example.EthanApiPlugin.Collections.Widgets;
 import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.InteractionApi.InventoryInteraction;
 import com.example.InteractionApi.TileObjectInteraction;
 import com.example.PacketUtils.PacketUtilsPlugin;
 import com.example.Packets.ObjectPackets;
+import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
+import net.runelite.api.annotations.VarCStr;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
@@ -23,6 +26,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import org.apache.commons.lang3.RandomUtils;
 
 import javax.inject.Inject;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -291,12 +295,62 @@ public class AutoTitheFarmPlugin extends Plugin {
         list.removeIf(tileObject -> playerDirection() != null && playerDirection().equals(tileObject.getWorldLocation()));
     }
 
+    private void handleLobby() {
+        Plants neededPlant = null;
+        int firstChatOptionId = 0;
+        Optional<Widget> firstChatWindowId = Widgets.search().withTextContains("kind of crop").hiddenState(false).first();
+        Optional<Widget> secondChatWindowId = Widgets.search().withTextContains("How many seeds").hiddenState(false).first();
+
+        for (Plants plant : Plants.values()) {
+            if (plant.getPlant() == null) {
+                continue;
+            }
+            neededPlant = plant.getPlant();
+        }
+
+        switch (Objects.requireNonNull(neededPlant)) {
+            case GOLOVANOVA: firstChatOptionId = 1; break;
+            case BOLOGANO: firstChatOptionId = 2; break;
+            case LOGAVANO: firstChatOptionId = 3; break;
+        }
+
+        log.info(String.valueOf(neededPlant));
+        log.info(String.valueOf(firstChatOptionId));
+
+        if (getSeed() == null) {
+            if (secondChatWindowId.isPresent()) {
+
+                client.setVarcStrValue(VarClientStr.INPUT_TEXT, Integer.toString(10000));
+
+                KeyEvent keyPress = new KeyEvent(client.getCanvas(), KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER);
+                client.getCanvas().dispatchEvent(keyPress);
+                return;
+            }
+            if (firstChatWindowId.isEmpty()) {
+                TileObjects.search().withId(ObjectID.SEED_TABLE).first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Search"));
+                return;
+            }
+            WidgetPackets.queueResumePause(14352385, firstChatOptionId);
+            return;
+        }
+        if (waitForAction) {
+            return;
+        }
+        TileObjects.search().nameContains("Farm door").first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Open"));
+        waitForAction = true;
+    }
+
     @Subscribe
     private void onGameTick(GameTick event) {
         openHerbBox();
         getLastActionTimer();
 
-        if (!gotRequiredItems() || !isInsideTitheFarm()) {
+        if (!isInsideTitheFarm()) {
+            handleLobby();
+            return;
+        }
+
+        if (!gotRequiredItems()) {
             return;
         }
 
@@ -354,19 +408,19 @@ public class AutoTitheFarmPlugin extends Plugin {
             waitForAction = false;
         }
 
-        for (Plants plants : Plants.values()) {
+        for (Plants plant : Plants.values()) {
 
-            if (objectId == plants.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
+            if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
                 isHarvestingPhase = true;
             }
 
-            if (objectId == plants.getFirstStageId()) {
+            if (objectId == plant.getFirstStageId()) {
                 populateList(firstPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plants.getSecondStageId()) {
+            } else if (objectId == plant.getSecondStageId()) {
                 populateList(secondPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plants.getThirdStageId()) {
+            } else if (objectId == plant.getThirdStageId()) {
                 populateList(thirdPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plants.getFourthStageId()) {
+            } else if (objectId == plant.getFourthStageId()) {
                 populateList(fourthPhaseObjectsToFocus, gameObject);
             }
         }

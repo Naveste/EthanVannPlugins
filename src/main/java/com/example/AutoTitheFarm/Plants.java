@@ -31,11 +31,16 @@ public enum Plants {
         this.fourthStageId = fourthStageId;
     }
 
+    private boolean farmingLevelIsInRange() {
+        return farmingLevel >= minLevelRequirement && farmingLevel <= maxLevelRequirement;
+    }
+
+    public Plants getPlant() {
+        return farmingLevelIsInRange() ? this : null;
+    }
+
     private int getStageId(int stageId) {
-        if (farmingLevel >= minLevelRequirement && farmingLevel <= maxLevelRequirement) {
-            return stageId;
-        }
-        return -1;
+        return farmingLevelIsInRange() ? stageId : -1;
     }
 
     public int getFirstStageId() {
