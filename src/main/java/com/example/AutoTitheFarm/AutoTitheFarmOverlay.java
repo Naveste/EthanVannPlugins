@@ -1,12 +1,10 @@
 package com.example.AutoTitheFarm;
-import net.runelite.api.Client;
-import net.runelite.api.Perspective;
-import net.runelite.api.TileObject;
+import net.runelite.api.*;
+import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.*;
-import net.runelite.api.Point;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -15,6 +13,7 @@ import java.util.List;
 
 public class AutoTitheFarmOverlay extends Overlay {
     AutoTitheFarmPlugin plugin;
+
     Client client;
 
     AutoTitheFarmOverlay(Client client, AutoTitheFarmPlugin plugin) {
@@ -37,6 +36,13 @@ public class AutoTitheFarmOverlay extends Overlay {
         }
     }
 
+    private void renderTextOnActor(Graphics2D graphics, Actor actor, String text, Color color) {
+        Point textLocation = actor.getCanvasTextLocation(graphics, text, actor.getLogicalHeight() + 40);
+        if (textLocation != null) {
+            OverlayUtil.renderTextLocation(graphics, textLocation, text, color);
+        }
+    }
+
     @Override
     public Dimension render(Graphics2D graphics) {
         graphics.setFont(FontManager.getRunescapeFont());
@@ -45,6 +51,8 @@ public class AutoTitheFarmOverlay extends Overlay {
         for (TileObject tileObject : patches) {
             renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
         }
+
+        renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.waitForAction, Color.RED);
 
         return null;
     }

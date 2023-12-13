@@ -94,7 +94,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private final List<TileObject> fourthPhaseObjectsToFocus = new ArrayList<>();
 
-    private boolean waitForAction;
+    public boolean waitForAction;
 
     private boolean isHarvestingPhase;
 
@@ -319,7 +319,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         if (getSeed() == null) {
             if (secondChatWindowId.isPresent()) {
-
                 client.setVarcStrValue(VarClientStr.INPUT_TEXT, Integer.toString(10000));
 
                 KeyEvent keyPress = new KeyEvent(client.getCanvas(), KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER);
@@ -369,7 +368,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 //        log.info("Random count: " + randomCount);
 //        log.info("waterChargesCountUsed: " + waterChargesCountUsed);
 //        log.info("needToRestoreRunEnergy: " + needToRestoreRunEnergy);
-        log.info("lastActionTimer: " + lastActionTimer);
+        log.info("starting new run: " + startingNewRun());
     }
 
     @Subscribe
@@ -381,10 +380,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (animationId == WATERING_ANIMATION
-                || animationId == PLANTING_ANIMATION
-                || animationId == -1
-                || animationId == DIGGING_ANIMATION) {
+        if (animationId == -1) {
             waitForAction = false;
         }
     }
