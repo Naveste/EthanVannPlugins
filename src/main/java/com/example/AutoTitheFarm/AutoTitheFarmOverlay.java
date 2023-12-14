@@ -56,7 +56,11 @@ public class AutoTitheFarmOverlay extends Overlay {
                 renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
             }
 
-            renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.waitForAction, Color.RED);
+            renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.isWaitForAction(), Color.RED);
+        }
+
+        if (plugin.isNeedToRestoreRunEnergy() && plugin.startingNewRun()) {
+            renderTextLocation(graphics, "Idling until 100% energy", client.getLocalPlayer().getWorldLocation(), Color.RED);
         }
 
         return null;

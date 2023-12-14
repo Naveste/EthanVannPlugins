@@ -12,6 +12,8 @@ import com.example.Packets.MovementPackets;
 import com.example.Packets.ObjectPackets;
 import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.annotations.VarCStr;
@@ -97,13 +99,17 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private final List<TileObject> fourthPhaseObjectsToFocus = new ArrayList<>();
 
-    public boolean waitForAction;
+    @Getter
+    private boolean waitForAction;
 
     private boolean isHarvestingPhase;
 
+    @Getter
     private boolean needToRestoreRunEnergy;
 
-    public static int farmingLevel;
+    @Setter
+    @Getter
+    private static int farmingLevel;
 
     private int[][] patchLayout;
 
@@ -116,7 +122,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     private int lastActionTimer;
 
     private void initValues() {
-        farmingLevel = getGetPlayerFarmingLevel();
+        setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
         randomCount = getRandomCount();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
@@ -157,7 +163,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         return randomCount == waterChargesCountUsed || waterChargesCountUsed > randomCount;
     }
 
-    private boolean startingNewRun() {
+    public boolean startingNewRun() {
         return emptyPatches.size() == amountOfPatches;
     }
 
@@ -261,7 +267,7 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (runEnergy < config.minRunEnergyToIdleUnder()) {
+            if (runEnergy <= config.minRunEnergyToIdleUnder()) {
                 needToRestoreRunEnergy = true;
             }
 
@@ -383,10 +389,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (animationId == WATERING_ANIMATION
-                || animationId == PLANTING_ANIMATION
-                || animationId == -1
-                || animationId == DIGGING_ANIMATION) {
+        if (animationId == WATERING_ANIMATION || animationId == PLANTING_ANIMATION || animationId == -1) {
             waitForAction = false;
         }
     }

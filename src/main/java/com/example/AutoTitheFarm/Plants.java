@@ -1,6 +1,6 @@
 package com.example.AutoTitheFarm;
 
-import static com.example.AutoTitheFarm.AutoTitheFarmPlugin.farmingLevel;
+import static com.example.AutoTitheFarm.AutoTitheFarmPlugin.*;
 
 public enum Plants {
     GOLOVANOVA(34, 53, 27384, 27387, 27390, 27393),
@@ -32,7 +32,7 @@ public enum Plants {
     }
 
     private boolean farmingLevelIsInRange() {
-        return farmingLevel >= minLevelRequirement && farmingLevel <= maxLevelRequirement;
+        return getFarmingLevel() >= minLevelRequirement && getFarmingLevel() <= maxLevelRequirement;
     }
 
     public Plants getPlant() {
