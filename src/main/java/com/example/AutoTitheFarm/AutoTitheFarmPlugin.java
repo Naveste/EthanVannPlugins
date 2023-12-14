@@ -12,6 +12,7 @@ import com.example.Packets.MovementPackets;
 import com.example.Packets.ObjectPackets;
 import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -99,16 +100,16 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private final List<TileObject> fourthPhaseObjectsToFocus = new ArrayList<>();
 
-    @Getter
+    @Getter(AccessLevel.PACKAGE)
     private boolean waitForAction;
 
     private boolean isHarvestingPhase;
 
-    @Getter
+    @Getter(AccessLevel.PACKAGE)
     private boolean needToRestoreRunEnergy;
 
-    @Setter
-    @Getter
+    @Setter(AccessLevel.PACKAGE)
+    @Getter(AccessLevel.PACKAGE)
     private static int farmingLevel;
 
     private int[][] patchLayout;
