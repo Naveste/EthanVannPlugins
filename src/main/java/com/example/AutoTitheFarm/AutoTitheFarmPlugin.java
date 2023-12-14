@@ -247,13 +247,20 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
     }
 
-    private void handleShit() {
+    private void handleMinigame() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
         int runEnergy = client.getEnergy() / 100;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
 
-        // if 20 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (lastActionTimer > (startingNewRun() ? 2 : 20) && !EthanApiPlugin.isMoving()) {
+        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
+            dePopulateList(firstPhaseObjectsToFocus);
+            dePopulateList(secondPhaseObjectsToFocus);
+            dePopulateList(thirdPhaseObjectsToFocus);
+            dePopulateList(fourthPhaseObjectsToFocus);
+        }
+
+        // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
+        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving()) {
             waitForAction = false;
         }
 
@@ -376,21 +383,13 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         captureEmptyPatches();
-
-        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
-            dePopulateList(firstPhaseObjectsToFocus);
-            dePopulateList(secondPhaseObjectsToFocus);
-            dePopulateList(thirdPhaseObjectsToFocus);
-            dePopulateList(fourthPhaseObjectsToFocus);
-        }
-
-        handleShit();
+        handleMinigame();
 
 //        log.info("needToRefillWaterCan: " + isNeedToRefillWateringCan());
 //        log.info("Random count: " + randomCount);
 //        log.info("waterChargesCountUsed: " + waterChargesCountUsed);
 //        log.info("needToRestoreRunEnergy: " + needToRestoreRunEnergy);
-        log.info("starting new run: " + startingNewRun());
+//        log.info("starting new run: " + startingNewRun());
     }
 
     @Subscribe
