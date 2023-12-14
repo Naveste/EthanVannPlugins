@@ -3,15 +3,38 @@ package com.example.AutoTitheFarm;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("AutoTitheFarm")
 public interface AutoTitheFarmConfig extends Config {
+
+    @ConfigSection(
+            name = "Plugin setup",
+            description = "",
+            position = 0
+    )
+    String SETUP = "Setup";
+
+    @ConfigSection(
+            name = "Misc.",
+            description = "",
+            position = 1
+    )
+    String MISC = "Misc";
+
+    @ConfigSection(
+            name = "Overlay",
+            description = "",
+            position = 2
+    )
+    String OVERLAY = "Overlay";
 
     @ConfigItem(
             keyName = "layout",
             name = "Patch Layout",
             description = " ",
-            position = 0
+            position = 0,
+            section = SETUP
     )
     default PatchLayout patchLayout() {
         return PatchLayout.LOW_PING_LAYOUT;
@@ -21,17 +44,41 @@ public interface AutoTitheFarmConfig extends Config {
             keyName = "minRunEnergyToIdleUnder",
             name = "Idle if run energy is under",
             description = " ",
-            position = 1
+            position = 1,
+            section = SETUP
     )
     default int minRunEnergyToIdleUnder() {
         return 20;
     }
 
     @ConfigItem(
+            keyName = "StopIfReachedFruitAmountFarmed",
+            name = "Stop plugin upon meeting criteria below",
+            description = " ",
+            position = 2,
+            section = MISC
+    )
+    default boolean stopIfReachedFruitAmountFarmed() {
+        return false;
+    }
+
+    @ConfigItem(
+            keyName = "maxFruitToFarm",
+            name = "Maximum amount of fruit to farm",
+            description = "How much fruit to farm before the plugin stops",
+            position = 3,
+            section = MISC
+    )
+    default int maxFruitToFarm() {
+        return 200;
+    }
+
+    @ConfigItem(
             keyName = "enableDebug",
             name = "Enable debug",
             description = " ",
-            position = 2
+            position = 4,
+            section = OVERLAY
     )
     default boolean enableDebug() {
         return false;

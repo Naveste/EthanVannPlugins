@@ -7,8 +7,6 @@ import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.InteractionApi.InventoryInteraction;
 import com.example.InteractionApi.TileObjectInteraction;
 import com.example.PacketUtils.PacketUtilsPlugin;
-import com.example.Packets.MousePackets;
-import com.example.Packets.MovementPackets;
 import com.example.Packets.ObjectPackets;
 import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
@@ -17,7 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.annotations.VarCStr;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
@@ -37,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.example.EthanApiPlugin.Collections.query.TileObjectQuery.getObjectComposition;
+import static com.example.EthanApiPlugin.EthanApiPlugin.stopPlugin;
 import static com.example.PacketUtils.PacketReflection.client;
 
 @Slf4j
@@ -233,8 +231,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
     }
 
+    private Optional<Widget> herbBox() {
+        return Inventory.search().withId(ItemID.HERB_BOX).first();
+    }
+
     private void openHerbBox() {
-        Inventory.search().withId(ItemID.HERB_BOX).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Bank-all"));
+        herbBox().ifPresent(itm -> InventoryInteraction.useItem(itm, "Bank-all"));
     }
 
     private void getLastActionTimer() {
@@ -248,6 +250,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void handleShit() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
         int runEnergy = client.getEnergy() / 100;
+        Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
 
         // if 20 ticks have passed and no actions have been made within time limit then something went horribly wrong.
         if (lastActionTimer > (startingNewRun() ? 2 : 20) && !EthanApiPlugin.isMoving()) {
@@ -265,6 +268,11 @@ public class AutoTitheFarmPlugin extends Plugin {
             if (isNeedToRefillWateringCan()) {
                 log.info("Need to refill can");
                 useItemOnObject(getWateringCan(), waterBarrel.orElse(null));
+                return;
+            }
+
+            if (fruit.isPresent() && config.stopIfReachedFruitAmountFarmed() && fruit.get().getItemQuantity() >= config.maxFruitToFarm()) {
+                stopPlugin(this);
                 return;
             }
 
@@ -306,6 +314,11 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void handleLobby() {
+        if (herbBox().isPresent()) {
+            openHerbBox();
+            return;
+        }
+
         Plants neededPlant = null;
         int firstChatOptionId = 0;
         Optional<Widget> firstChatWindowId = Widgets.search().withTextContains("kind of crop").hiddenState(false).first();
@@ -324,8 +337,8 @@ public class AutoTitheFarmPlugin extends Plugin {
             case LOGAVANO: firstChatOptionId = 3; break;
         }
 
-        log.info(String.valueOf(neededPlant));
-        log.info(String.valueOf(firstChatOptionId));
+//        log.info(String.valueOf(neededPlant));
+//        log.info(String.valueOf(firstChatOptionId));
 
         if (getSeed() == null) {
             if (secondChatWindowId.isPresent()) {
@@ -351,7 +364,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
-        openHerbBox();
         getLastActionTimer();
 
         if (!isInsideTitheFarm()) {
