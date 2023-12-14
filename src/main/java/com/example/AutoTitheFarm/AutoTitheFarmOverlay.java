@@ -16,9 +16,12 @@ public class AutoTitheFarmOverlay extends Overlay {
 
     Client client;
 
-    AutoTitheFarmOverlay(Client client, AutoTitheFarmPlugin plugin) {
+    AutoTitheFarmConfig config;
+
+    AutoTitheFarmOverlay(Client client, AutoTitheFarmPlugin plugin, AutoTitheFarmConfig config) {
         this.plugin = plugin;
         this.client = client;
+        this.config = config;
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
         setPriority(OverlayPriority.HIGHEST);
@@ -47,12 +50,14 @@ public class AutoTitheFarmOverlay extends Overlay {
     public Dimension render(Graphics2D graphics) {
         graphics.setFont(FontManager.getRunescapeFont());
 
-        List<TileObject> patches = new ArrayList<>(plugin.emptyPatches);
-        for (TileObject tileObject : patches) {
-            renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
-        }
+        if (config.enableDebug()) {
+            List<TileObject> patches = new ArrayList<>(plugin.emptyPatches);
+            for (TileObject tileObject : patches) {
+                renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
+            }
 
-        renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.waitForAction, Color.RED);
+            renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.waitForAction, Color.RED);
+        }
 
         return null;
     }

@@ -7,6 +7,8 @@ import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.InteractionApi.InventoryInteraction;
 import com.example.InteractionApi.TileObjectInteraction;
 import com.example.PacketUtils.PacketUtilsPlugin;
+import com.example.Packets.MousePackets;
+import com.example.Packets.MovementPackets;
 import com.example.Packets.ObjectPackets;
 import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
@@ -39,6 +41,7 @@ import static com.example.PacketUtils.PacketReflection.client;
 @PluginDependency(EthanApiPlugin.class)
 @PluginDescriptor(name =
         "AutoTitheFarm",
+        description = "Will do Tithe Farm for you",
         enabledByDefault = false,
         tags = {""})
 public class AutoTitheFarmPlugin extends Plugin {
@@ -57,7 +60,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Override
     public void startUp() {
         log.info("Plugin started");
-        overlay = new AutoTitheFarmOverlay(client, this);
+        overlay = new AutoTitheFarmOverlay(client, this, config);
         overlayManager.add(overlay);
         initValues();
     }
@@ -193,7 +196,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private void doAction(List<TileObject> collection) {
         TileObject patch = collection.get(0);
-        log.info("Wait for action: " + waitForAction);
+        //log.info("Wait for action: " + waitForAction);
         if (waitForAction) {
             return;
         }
@@ -202,7 +205,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void useItemOnObject(Widget widget, TileObject tileObject) {
-        log.info("Wait for action: " + waitForAction);
+        //log.info("Wait for action: " + waitForAction);
         Optional<Widget> optionalWidget = Optional.of(widget);
         if (waitForAction) {
             return;
@@ -380,7 +383,10 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (animationId == -1) {
+        if (animationId == WATERING_ANIMATION
+                || animationId == PLANTING_ANIMATION
+                || animationId == -1
+                || animationId == DIGGING_ANIMATION) {
             waitForAction = false;
         }
     }

@@ -26,4 +26,14 @@ public interface AutoTitheFarmConfig extends Config {
     default int minRunEnergyToIdleUnder() {
         return 20;
     }
+
+    @ConfigItem(
+            keyName = "enableDebug",
+            name = "Enable debug",
+            description = " ",
+            position = 2
+    )
+    default boolean enableDebug() {
+        return false;
+    }
 }
