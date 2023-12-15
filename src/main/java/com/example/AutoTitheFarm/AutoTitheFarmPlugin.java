@@ -291,7 +291,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving()) {
+        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && waitForAction) {
             waitForAction = false;
         }
 
@@ -521,6 +521,16 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         if (message.contains("can is already full")) {
             randomCount = getRandomCount();
+        }
+    }
+
+    @Subscribe
+    private void onGameStateChanged(GameStateChanged event) {
+        GameState gameState = event.getGameState();
+
+        // failsafe
+        if (gameState == GameState.CONNECTION_LOST) {
+            stopPlugin(this);
         }
     }
 
