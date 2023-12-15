@@ -170,6 +170,14 @@ public class AutoTitheFarmPlugin extends Plugin {
         return client.getRealSkillLevel(Skill.FARMING);
     }
 
+    private void openFarmDoor() {
+        if (waitForAction) {
+            return;
+        }
+        TileObjects.search().nameContains("Farm door").first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Open"));
+        waitForAction = true;
+    }
+
     private WorldPoint playerDirection() {
         WorldPoint worldPoint = null;
         int playerOrientation = client.getLocalPlayer().getCurrentOrientation();
@@ -262,7 +270,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         currentSeed = matcher.find() ? matcher.group(1) : null;
 
         String compareString = null;
-        switch (Objects.requireNonNull(Plants.neededPlant())) {
+        switch (Objects.requireNonNull(Plants.getNeededPlant())) {
             case BOLOGANO: compareString = "Bologano"; break;
             case GOLOVANOVA: compareString = "Golovanova"; break;
             case LOGAVANO: compareString = "Logavano"; break;
@@ -279,7 +287,11 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
-            stopPlugin(this);
+            if (fruit.isEmpty()) {
+                openFarmDoor();
+            } else {
+                stopPlugin(this);
+            }
             return;
         }
 
@@ -367,7 +379,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<Widget> firstChatWindowId = Widgets.search().withTextContains("kind of crop").hiddenState(false).first();
         Optional<Widget> secondChatWindowId = Widgets.search().withTextContains("How many seeds").hiddenState(false).first();
 
-        switch (Objects.requireNonNull(Plants.neededPlant())) {
+        switch (Objects.requireNonNull(Plants.getNeededPlant())) {
             case GOLOVANOVA: firstChatOptionId = 1; break;
             case BOLOGANO: firstChatOptionId = 2; break;
             case LOGAVANO: firstChatOptionId = 3; break;
@@ -388,11 +400,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             WidgetPackets.queueResumePause(14352385, firstChatOptionId);
             return;
         }
-        if (waitForAction) {
-            return;
-        }
-        TileObjects.search().nameContains("Farm door").first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Open"));
-        waitForAction = true;
+        openFarmDoor();
     }
 
     @Subscribe
@@ -446,26 +454,24 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void onGameObjectSpawned(GameObjectSpawned event) {
         GameObject gameObject = event.getGameObject();
         int objectId = gameObject.getId();
+        Plants plant = Plants.getNeededPlant();
 
         if (gameObject.getWorldLocation().equals(playerDirection()) || startingNewRun()) {
             waitForAction = false;
         }
 
-        for (Plants plant : Plants.values()) {
+        if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
+            isHarvestingPhase = true;
+        }
 
-            if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
-                isHarvestingPhase = true;
-            }
-
-            if (objectId == plant.getFirstStageId()) {
-                populateList(firstPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plant.getSecondStageId()) {
-                populateList(secondPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plant.getThirdStageId()) {
-                populateList(thirdPhaseObjectsToFocus, gameObject);
-            } else if (objectId == plant.getFourthStageId()) {
-                populateList(fourthPhaseObjectsToFocus, gameObject);
-            }
+        if (objectId == plant.getFirstStageId()) {
+            populateList(firstPhaseObjectsToFocus, gameObject);
+        } else if (objectId == plant.getSecondStageId()) {
+            populateList(secondPhaseObjectsToFocus, gameObject);
+        } else if (objectId == plant.getThirdStageId()) {
+            populateList(thirdPhaseObjectsToFocus, gameObject);
+        } else if (objectId == plant.getFourthStageId()) {
+            populateList(fourthPhaseObjectsToFocus, gameObject);
         }
 
         String objectName = getObjectComposition(gameObject).getName();

@@ -59,7 +59,7 @@ public enum Plants {
         return getStageId(fourthStageId);
     }
 
-    public static Plants neededPlant() {
+    public static Plants getNeededPlant() {
         Plants neededPlant = null;
         for (Plants plant : Plants.values()) {
             if (plant.getPlant() == null) {
