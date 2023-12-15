@@ -247,10 +247,41 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
     }
 
+    private boolean isCurrentSeedMatchingFarmingLevel() {
+        String currentSeed;
+        Pattern pattern = Pattern.compile("<col=ff9040>(\\w+)");
+        Matcher matcher = null;
+
+        try {
+            matcher = pattern.matcher(getSeed().getName());
+        } catch (NullPointerException e) {
+            log.info(e.getMessage());
+        }
+
+        assert matcher != null;
+        currentSeed = matcher.find() ? matcher.group(1) : null;
+
+        String compareString = null;
+        switch (Objects.requireNonNull(Plants.neededPlant())) {
+            case BOLOGANO: compareString = "Bologano"; break;
+            case GOLOVANOVA: compareString = "Golovanova"; break;
+            case LOGAVANO: compareString = "Logavano"; break;
+        }
+
+        // current seed in the inventory should never be null either way
+        assert currentSeed != null;
+        return currentSeed.equals(compareString);
+    }
+
     private void handleMinigame() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
         int runEnergy = client.getEnergy() / 100;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
+
+        if (!isCurrentSeedMatchingFarmingLevel()) {
+            stopPlugin(this);
+            return;
+        }
 
         if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
             dePopulateList(firstPhaseObjectsToFocus);
@@ -271,6 +302,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (startingNewRun()) {
             isHarvestingPhase = false;
             foundBlightedPlant = false;
+
+            // in case we've for whatever reason have used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
+            if (getSeed().getItemQuantity() < 100) {
+                stopPlugin(this);
+                return;
+            }
 
             if (isNeedToRefillWateringCan()) {
                 log.info("Need to refill can");
@@ -326,26 +363,15 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        Plants neededPlant = null;
         int firstChatOptionId = 0;
         Optional<Widget> firstChatWindowId = Widgets.search().withTextContains("kind of crop").hiddenState(false).first();
         Optional<Widget> secondChatWindowId = Widgets.search().withTextContains("How many seeds").hiddenState(false).first();
 
-        for (Plants plant : Plants.values()) {
-            if (plant.getPlant() == null) {
-                continue;
-            }
-            neededPlant = plant.getPlant();
-        }
-
-        switch (Objects.requireNonNull(neededPlant)) {
+        switch (Objects.requireNonNull(Plants.neededPlant())) {
             case GOLOVANOVA: firstChatOptionId = 1; break;
             case BOLOGANO: firstChatOptionId = 2; break;
             case LOGAVANO: firstChatOptionId = 3; break;
         }
-
-//        log.info(String.valueOf(neededPlant));
-//        log.info(String.valueOf(firstChatOptionId));
 
         if (getSeed() == null) {
             if (secondChatWindowId.isPresent()) {

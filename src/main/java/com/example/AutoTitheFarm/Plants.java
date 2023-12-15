@@ -35,7 +35,7 @@ public enum Plants {
         return getFarmingLevel() >= minLevelRequirement && getFarmingLevel() <= maxLevelRequirement;
     }
 
-    public Plants getPlant() {
+    private Plants getPlant() {
         return farmingLevelIsInRange() ? this : null;
     }
 
@@ -57,5 +57,16 @@ public enum Plants {
 
     public int getFourthStageId() {
         return getStageId(fourthStageId);
+    }
+
+    public static Plants neededPlant() {
+        Plants neededPlant = null;
+        for (Plants plant : Plants.values()) {
+            if (plant.getPlant() == null) {
+                continue;
+            }
+            neededPlant = plant.getPlant();
+        }
+        return neededPlant;
     }
 }
