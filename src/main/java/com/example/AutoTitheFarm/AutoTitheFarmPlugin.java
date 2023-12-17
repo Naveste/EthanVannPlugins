@@ -7,6 +7,8 @@ import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.InteractionApi.InventoryInteraction;
 import com.example.InteractionApi.TileObjectInteraction;
 import com.example.PacketUtils.PacketUtilsPlugin;
+import com.example.Packets.MousePackets;
+import com.example.Packets.MovementPackets;
 import com.example.Packets.ObjectPackets;
 import com.example.Packets.WidgetPackets;
 import com.google.inject.Provides;
@@ -120,9 +122,12 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private int lastActionTimer;
 
+    WorldPoint defaultStartingPos;
+
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
+        defaultStartingPos = config.patchLayout().getStartingPoint();
         randomCount = getRandomCount();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
     }
@@ -136,6 +141,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         waitForAction = false;
         randomCount = 0;
         needToRestoreRunEnergy = false;
+        defaultStartingPos = null;
     }
 
     private boolean gotRequiredItems() {
@@ -143,6 +149,18 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
         // generalized and crude checks for now.
         return getWateringCan() != null && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
+    }
+
+    private String getObjectAction(TileObject object) {
+        ObjectComposition objectComposition = getObjectComposition(object);
+        String getAction = null;
+        for (String action : objectComposition.getActions()) {
+            if (action == null) {
+                continue;
+            }
+            getAction = action;
+        }
+        return getAction;
     }
 
     private int getRandomCount() {
@@ -215,6 +233,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
         TileObjectInteraction.interact(patch, "Water", "Harvest");
         waitForAction = true;
+        log.info(getObjectAction(patch) + "ing");
     }
 
     private void useItemOnObject(Widget widget, TileObject tileObject) {
@@ -282,7 +301,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void handleMinigame() {
-        Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").atLocation(WorldPoint.fromLocal(client, 7360, 6720, 0)).first();
+        Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
 
@@ -337,6 +356,15 @@ public class AutoTitheFarmPlugin extends Plugin {
             }
 
             if (needToRestoreRunEnergy) {
+                return;
+            }
+
+            if (defaultStartingPos != null && !client.getLocalPlayer().getWorldLocation().equals(defaultStartingPos)) {
+                if (!EthanApiPlugin.isMoving()) {
+                    MousePackets.queueClickPacket();
+                    MovementPackets.queueMovement(defaultStartingPos);
+                    log.info("Moving to starting position");
+                }
                 return;
             }
         }
@@ -435,7 +463,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (animationId == WATERING_ANIMATION || animationId == PLANTING_ANIMATION || animationId == -1) {
+        if (animationId == -1) {
             waitForAction = false;
         }
     }
@@ -534,9 +562,10 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void onGameStateChanged(GameStateChanged event) {
         GameState gameState = event.getGameState();
 
-        // failsafe
-        if (gameState == GameState.CONNECTION_LOST) {
-            stopPlugin(this);
+        switch (gameState) {
+            case CONNECTION_LOST:
+            case LOGIN_SCREEN:
+            case LOGIN_SCREEN_AUTHENTICATOR: stopPlugin(this); break;
         }
     }
 

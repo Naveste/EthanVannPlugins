@@ -39,8 +39,8 @@ public class AutoTitheFarmOverlay extends Overlay {
         }
     }
 
-    private void renderTextOnActor(Graphics2D graphics, Actor actor, String text, Color color) {
-        Point textLocation = actor.getCanvasTextLocation(graphics, text, actor.getLogicalHeight() + 40);
+    private void renderTextOnActor(Graphics2D graphics, Actor actor, String text, Color color, int zOffSet) {
+        Point textLocation = actor.getCanvasTextLocation(graphics, text, actor.getLogicalHeight() + zOffSet);
         if (textLocation != null) {
             OverlayUtil.renderTextLocation(graphics, textLocation, text, color);
         }
@@ -56,7 +56,7 @@ public class AutoTitheFarmOverlay extends Overlay {
                 renderTextLocation(graphics, String.valueOf(patches.indexOf(tileObject) + 1), tileObject.getWorldLocation(), Color.WHITE);
             }
 
-            renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.isWaitForAction(), Color.RED);
+            renderTextOnActor(graphics, client.getLocalPlayer(), "Wait for action: " + plugin.isWaitForAction(), Color.RED, 40);
         }
 
         if (plugin.isNeedToRestoreRunEnergy() && plugin.startingNewRun()) {
