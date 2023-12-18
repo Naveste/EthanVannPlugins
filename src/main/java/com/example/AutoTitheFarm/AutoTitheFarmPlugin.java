@@ -88,7 +88,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private static final int DIGGING_ANIMATION = 830;
 
-    private int amountOfPatches;
+    private int totalAmountOfPatches;
 
     public final Set<TileObject> emptyPatches = new LinkedHashSet<>();
 
@@ -181,7 +181,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     public boolean startingNewRun() {
-        return emptyPatches.size() == amountOfPatches;
+        return emptyPatches.size() == totalAmountOfPatches;
     }
 
     private int getGetPlayerFarmingLevel() {
@@ -197,7 +197,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private WorldPoint playerDirection() {
-        WorldPoint worldPoint = null;
+        WorldPoint worldPoint;
         int playerOrientation = client.getLocalPlayer().getCurrentOrientation();
         WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
 
@@ -207,7 +207,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             case 663: worldPoint = playerLocation.dx(-2).dy(1); break;
             case 1385: worldPoint = playerLocation.dx(2).dy(1); break;
             case 1688: worldPoint = playerLocation.dx(2).dy(-1); break;
-            default: //
+            default: worldPoint = null;
         }
 
         return worldPoint;
@@ -247,7 +247,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void captureEmptyPatches() {
-        amountOfPatches = patchLayout.length;
+        totalAmountOfPatches = patchLayout.length;
 
         if (!emptyPatches.isEmpty()) {
             emptyPatches.clear();
@@ -334,7 +334,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             isHarvestingPhase = false;
             foundBlightedPlant = false;
 
-            // in case we've for whatever reason have used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
+            // in case we've for whatever reason used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
             if (getSeed().getItemQuantity() < 100) {
                 stopPlugin(this);
                 return;
