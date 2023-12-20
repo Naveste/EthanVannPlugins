@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.example.EthanApiPlugin.Collections.query.TileObjectQuery.getObjectComposition;
+import static com.example.EthanApiPlugin.EthanApiPlugin.sendClientMessage;
 import static com.example.EthanApiPlugin.EthanApiPlugin.stopPlugin;
 import static com.example.PacketUtils.PacketReflection.client;
 
@@ -122,7 +123,9 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private int lastActionTimer;
 
-    WorldPoint defaultStartingPos;
+    private WorldPoint defaultStartingPos;
+
+    private boolean pluginJustEnabled;
 
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
@@ -130,6 +133,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         defaultStartingPos = config.patchLayout().getStartingPoint();
         randomCount = getRandomCount();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
+        pluginJustEnabled = true;
     }
 
     private void resetValues() {
@@ -142,6 +146,16 @@ public class AutoTitheFarmPlugin extends Plugin {
         randomCount = 0;
         needToRestoreRunEnergy = false;
         defaultStartingPos = null;
+        pluginJustEnabled = false;
+        lastActionTimer = 0;
+    }
+
+    private boolean pluginStartedDuringARun() {
+        if (pluginJustEnabled && !startingNewRun()) {
+            sendClientMessage("Incorrect plugin startup state: start the plugin when the patches are completely empty.");
+            return true;
+        }
+        return false;
     }
 
     private boolean gotRequiredItems() {
@@ -333,6 +347,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (startingNewRun()) {
             isHarvestingPhase = false;
             foundBlightedPlant = false;
+            pluginJustEnabled = false;
 
             // in case we've for whatever reason used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
             if (getSeed().getItemQuantity() < 100) {
@@ -445,13 +460,13 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         captureEmptyPatches();
-        handleMinigame();
 
-//        log.info("needToRefillWaterCan: " + isNeedToRefillWateringCan());
-//        log.info("Random count: " + randomCount);
-//        log.info("waterChargesCountUsed: " + waterChargesCountUsed);
-//        log.info("needToRestoreRunEnergy: " + needToRestoreRunEnergy);
-//        log.info("starting new run: " + startingNewRun());
+        if (pluginStartedDuringARun()) {
+            stopPlugin(this);
+            return;
+        }
+
+        handleMinigame();
     }
 
     @Subscribe
