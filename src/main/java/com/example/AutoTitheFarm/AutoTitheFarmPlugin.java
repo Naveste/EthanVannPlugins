@@ -478,7 +478,8 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (animationId == -1) {
+        if (animationId == -1 && (!isInsideTitheFarm() || startingNewRun())) {
+            log.info("AnimationChanged");
             waitForAction = false;
         }
     }
