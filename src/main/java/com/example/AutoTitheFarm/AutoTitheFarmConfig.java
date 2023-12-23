@@ -52,6 +52,17 @@ public interface AutoTitheFarmConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "oneTickBankAllHerbBoxes",
+            name = "One tick bank-all Herb boxes",
+            description = "Will mass bank-all herb boxes rather than just banking them one tick at a time",
+            position = 2,
+            section = SETUP
+    )
+    default boolean oneTickBankAllHerbBoxes() {
+        return false;
+    }
+
+    @ConfigItem(
             keyName = "StopIfReachedFruitAmountFarmed",
             name = "Stop plugin upon meeting criteria below",
             description = " ",

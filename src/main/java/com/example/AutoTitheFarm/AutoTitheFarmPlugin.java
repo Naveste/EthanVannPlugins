@@ -32,6 +32,7 @@ import org.apache.commons.lang3.RandomUtils;
 import javax.inject.Inject;
 import java.awt.event.KeyEvent;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -272,12 +273,17 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
     }
 
-    private Optional<Widget> herbBox() {
-        return Inventory.search().withId(ItemID.HERB_BOX).first();
+    private List<Widget> herbBox() {
+        return Inventory.search().withId(ItemID.HERB_BOX).result();
     }
 
     private void openHerbBox() {
-        herbBox().ifPresent(itm -> InventoryInteraction.useItem(itm, "Bank-all"));
+        Consumer<? super Widget> actionPredicate = itm -> InventoryInteraction.useItem(itm, "Bank-all");
+        if (config.oneTickBankAllHerbBoxes()) {
+            herbBox().forEach(actionPredicate);
+        } else {
+            herbBox().stream().findFirst().ifPresent(actionPredicate);
+        }
     }
 
     private void getLastActionTimer() {
@@ -413,7 +419,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void handleLobby() {
-        if (herbBox().isPresent()) {
+        if (!herbBox().isEmpty()) {
             openHerbBox();
             return;
         }
