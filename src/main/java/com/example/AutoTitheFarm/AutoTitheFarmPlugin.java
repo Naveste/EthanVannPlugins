@@ -467,8 +467,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
-        log.info(String.valueOf(getRegularCansCount()));
-        log.info(getWateringCan().getName());
         getLastActionTimer();
 
         if (!isInsideTitheFarm()) {
@@ -524,9 +522,9 @@ public class AutoTitheFarmPlugin extends Plugin {
             waitForAction = false;
         }
 
-        if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
-            isHarvestingPhase = true;
-        }
+//        if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
+//            isHarvestingPhase = true;
+//        }
 
         if (objectId == plant.getFirstStageId()) {
             populateList(firstPhaseObjectsToFocus, gameObject);
@@ -555,6 +553,12 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Subscribe
     private void onGameObjectDespawned(GameObjectDespawned event) {
         GameObject gameObject = event.getGameObject();
+        int objectId = gameObject.getId();
+        Plants plant = Plants.getNeededPlant();
+
+        if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
+            isHarvestingPhase = true;
+        }
     }
 
     private int getRegularCansCount() {
