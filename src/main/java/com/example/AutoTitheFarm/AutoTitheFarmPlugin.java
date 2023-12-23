@@ -90,6 +90,8 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private static final int DIGGING_ANIMATION = 830;
 
+    private static final String WATERING_CAN = "Watering can";
+
     private int totalAmountOfPatches;
 
     public final Set<TileObject> emptyPatches = new LinkedHashSet<>();
@@ -183,8 +185,10 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private Widget getWateringCan() {
-        Widget wateringCan = Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElse(null);
-        return wateringCan;
+        Widget gricollersCan = Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElse(null);
+        Widget regularWateringCan = Inventory.search().nameContains(WATERING_CAN).first().orElse(null);
+
+        return gricollersCan != null ? gricollersCan : regularWateringCan;
     }
 
     private Widget getSeed() {
@@ -324,6 +328,9 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
+        List<Widget> regularWateringCans = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
+                ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
+                ItemID.WATERING_CAN7)).result();
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
             if (fruit.isEmpty()) {
@@ -361,9 +368,15 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (isNeedToRefillWateringCan()) {
-                log.info("Need to refill can");
+            if (getWateringCan().getName().contains("Gricoller's") && isNeedToRefillWateringCan()) {
+                log.info("Need to refill Gricoller's can");
                 useItemOnObject(getWateringCan(), waterBarrel.orElse(null));
+                return;
+            }
+
+            if (getRegularCansCount() != -1 && getRegularCansCount() < 88) {
+                log.info("Need to refill regular cans");
+                regularWateringCans.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
                 return;
             }
 
@@ -391,7 +404,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (!firstPhaseObjectsToFocus.isEmpty()) {
-            doAction(firstPhaseObjectsToFocus);
+            useItemOnObject(getWateringCan(), firstPhaseObjectsToFocus.get(0));
             return;
         }
 
@@ -454,6 +467,8 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
+        log.info(String.valueOf(getRegularCansCount()));
+        log.info(getWateringCan().getName());
         getLastActionTimer();
 
         if (!isInsideTitheFarm()) {
@@ -540,6 +555,22 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Subscribe
     private void onGameObjectDespawned(GameObjectDespawned event) {
         GameObject gameObject = event.getGameObject();
+    }
+
+    private int getRegularCansCount() {
+        if (!getWateringCan().getName().contains(WATERING_CAN)) {
+            return -1;
+        }
+        int stack = 0;
+        List<Widget> wateringCans = Inventory.search().nameContains(WATERING_CAN).result();
+        for (Widget itm : wateringCans) {
+            Pattern pattern = Pattern.compile("<col=ff9040>Watering can\\((\\d+)\\)</col>");
+            Matcher matcher = pattern.matcher(itm.getName());
+            if (matcher.find()) {
+                stack += Integer.parseInt(matcher.group(1));
+            }
+        }
+        return stack;
     }
 
     private int getGricollersCanCount(String message) {
