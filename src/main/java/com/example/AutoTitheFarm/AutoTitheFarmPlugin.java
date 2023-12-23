@@ -90,7 +90,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private static final int DIGGING_ANIMATION = 830;
 
-    private static final String WATERING_CAN = "Watering can";
+    private static final String WATERING_CAN = "Watering can(";
 
     private int totalAmountOfPatches;
 
@@ -521,10 +521,6 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (gameObject.getWorldLocation().equals(playerDirection()) || startingNewRun()) {
             waitForAction = false;
         }
-
-//        if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
-//            isHarvestingPhase = true;
-//        }
 
         if (objectId == plant.getFirstStageId()) {
             populateList(firstPhaseObjectsToFocus, gameObject);
