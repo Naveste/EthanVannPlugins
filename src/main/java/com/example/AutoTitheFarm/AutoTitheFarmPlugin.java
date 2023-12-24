@@ -3,6 +3,7 @@ package com.example.AutoTitheFarm;
 import com.example.EthanApiPlugin.Collections.Inventory;
 import com.example.EthanApiPlugin.Collections.TileObjects;
 import com.example.EthanApiPlugin.Collections.Widgets;
+import com.example.EthanApiPlugin.Collections.query.ItemQuery;
 import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.InteractionApi.InventoryInteraction;
 import com.example.InteractionApi.TileObjectInteraction;
@@ -90,7 +91,9 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private static final int DIGGING_ANIMATION = 830;
 
-    private static final String WATERING_CAN = "Watering can(";
+    private static final String FILLED_WATERING_CAN = "Watering can(";
+
+    private static final int REGULAR_WATERING_CAN_MAX_CHARGES = 8;
 
     private int totalAmountOfPatches;
 
@@ -164,8 +167,10 @@ public class AutoTitheFarmPlugin extends Plugin {
     private boolean gotRequiredItems() {
         Optional<Widget> seedDibber = Inventory.search().withId(ItemID.SEED_DIBBER).first();
         Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
+        boolean canCheck = getAppropriateWateringCan().getName().contains("Gricoller's") || getAllRegularWateringCan().result().size() >= 9;
+
         // generalized and crude checks for now.
-        return getWateringCan() != null && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
+        return canCheck && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
     }
 
     private String getObjectAction(TileObject object) {
@@ -184,11 +189,17 @@ public class AutoTitheFarmPlugin extends Plugin {
         return RandomUtils.nextInt(2, 9);
     }
 
-    private Widget getWateringCan() {
-        Widget gricollersCan = Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElse(null);
-        Widget regularWateringCan = Inventory.search().nameContains(WATERING_CAN).first().orElse(null);
+    private ItemQuery getAllRegularWateringCan() {
+        return Inventory.search().matchesWildCardNoCase("Watering*");
+    }
 
-        return gricollersCan != null ? gricollersCan : regularWateringCan;
+    private Widget getAppropriateWateringCan() {
+        return Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().orElseGet(() -> getAllRegularWateringCan().first().orElse(null));
+
+    }
+
+    private Widget getFilledRegularWateringCan() {
+        return Inventory.search().nameContains(FILLED_WATERING_CAN).first().orElse(null);
     }
 
     private Widget getSeed() {
@@ -328,9 +339,10 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
-        List<Widget> regularWateringCans = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
+        List<Widget> regularWateringCansToRefill = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
                 ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
                 ItemID.WATERING_CAN7)).result();
+        boolean isGricollersCanFound = getAppropriateWateringCan().getName().contains("Gricoller's");
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
             if (fruit.isEmpty()) {
@@ -368,15 +380,19 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (getWateringCan().getName().contains("Gricoller's") && isNeedToRefillWateringCan()) {
+            if (isGricollersCanFound && isNeedToRefillWateringCan()) {
                 log.info("Need to refill Gricoller's can");
-                useItemOnObject(getWateringCan(), waterBarrel.orElse(null));
+                useItemOnObject(getAppropriateWateringCan(), waterBarrel.orElse(null));
                 return;
             }
 
-            if (getRegularCansCount() != -1 && getRegularCansCount() < 88) {
+            if (getRegularCansCount() < (getAllRegularWateringCan().result().size() * REGULAR_WATERING_CAN_MAX_CHARGES)) {
+                // getRegularCansCount() is technically unneeded, but is put here as an extra failsafe.
+                if (regularWateringCansToRefill.isEmpty()) {
+                    return;
+                }
                 log.info("Need to refill regular cans");
-                regularWateringCans.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
+                regularWateringCansToRefill.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
                 return;
             }
 
@@ -404,7 +420,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (!firstPhaseObjectsToFocus.isEmpty()) {
-            useItemOnObject(getWateringCan(), firstPhaseObjectsToFocus.get(0));
+            useItemOnObject(isGricollersCanFound ? getAppropriateWateringCan() : getFilledRegularWateringCan(), firstPhaseObjectsToFocus.get(0));
             return;
         }
 
@@ -558,13 +574,9 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private int getRegularCansCount() {
-        if (!getWateringCan().getName().contains(WATERING_CAN)) {
-            return -1;
-        }
         int stack = 0;
-        List<Widget> wateringCans = Inventory.search().nameContains(WATERING_CAN).result();
-        for (Widget itm : wateringCans) {
-            Pattern pattern = Pattern.compile("<col=ff9040>Watering can\\((\\d+)\\)</col>");
+        Pattern pattern = Pattern.compile("<col=ff9040>Watering can\\((\\d+)\\)</col>");
+        for (Widget itm : getAllRegularWateringCan().result()) {
             Matcher matcher = pattern.matcher(itm.getName());
             if (matcher.find()) {
                 stack += Integer.parseInt(matcher.group(1));
