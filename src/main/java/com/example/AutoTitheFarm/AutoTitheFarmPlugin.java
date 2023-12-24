@@ -154,6 +154,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         defaultStartingPos = null;
         pluginJustEnabled = false;
         lastActionTimer = 0;
+        gricollersChargesUsed = 0;
     }
 
     private boolean pluginStartedDuringARun() {
@@ -380,7 +381,12 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (isGricollersCanFound && isNeedToRefillGricollersCan()) {
+            if (fruit.isPresent() && config.stopIfReachedFruitAmountFarmed() && fruit.get().getItemQuantity() >= config.maxFruitToFarm()) {
+                stopPlugin(this);
+                return;
+            }
+
+            if (isNeedToRefillGricollersCan()) {
                 log.info("Need to refill Gricoller's can");
                 useItemOnObject(getAppropriateWateringCan(), waterBarrel.orElse(null));
                 return;
@@ -393,11 +399,6 @@ public class AutoTitheFarmPlugin extends Plugin {
                 }
                 log.info("Need to refill regular cans");
                 regularWateringCansToRefill.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
-                return;
-            }
-
-            if (fruit.isPresent() && config.stopIfReachedFruitAmountFarmed() && fruit.get().getItemQuantity() >= config.maxFruitToFarm()) {
-                stopPlugin(this);
                 return;
             }
 
