@@ -168,7 +168,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     private boolean gotRequiredItems() {
         Optional<Widget> seedDibber = Inventory.search().withId(ItemID.SEED_DIBBER).first();
         Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
-        boolean canCheck = getAppropriateWateringCan().getName().contains("Gricoller's") || getAllRegularWateringCan().result().size() >= 9;
+        boolean canCheck = isGricollersCanFound() || getAllRegularWateringCan().result().size() >= 9;
 
         // generalized and crude checks for now.
         return canCheck && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
@@ -207,7 +207,14 @@ public class AutoTitheFarmPlugin extends Plugin {
         return Inventory.search().nameContains("seed").first().orElse(null);
     }
 
+    private boolean isGricollersCanFound() {
+        return getAppropriateWateringCan().getName().contains("Gricoller's");
+    }
+
     private boolean isNeedToRefillGricollersCan() {
+        if (!isGricollersCanFound()) {
+            return false;
+        }
         return randomCount == gricollersChargesUsed || gricollersChargesUsed > randomCount;
     }
 
@@ -343,7 +350,6 @@ public class AutoTitheFarmPlugin extends Plugin {
         List<Widget> regularWateringCansToRefill = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
                 ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
                 ItemID.WATERING_CAN7)).result();
-        boolean isGricollersCanFound = getAppropriateWateringCan().getName().contains("Gricoller's");
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
             if (fruit.isEmpty()) {
@@ -421,7 +427,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (!firstPhaseObjectsToFocus.isEmpty()) {
-            useItemOnObject(isGricollersCanFound ? getAppropriateWateringCan() : getFilledRegularWateringCan(), firstPhaseObjectsToFocus.get(0));
+            useItemOnObject(isGricollersCanFound() ? getAppropriateWateringCan() : getFilledRegularWateringCan(), firstPhaseObjectsToFocus.get(0));
             return;
         }
 
