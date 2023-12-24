@@ -491,6 +491,9 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (!gotRequiredItems()) {
+            sendClientMessage("Starting requirements not met. " +
+                    "Please make sure you have all the required items in the inventory: spade, seed dibber, at least 9 regular watering cans, or gricoller's can.");
+            stopPlugin(this);
             return;
         }
 
