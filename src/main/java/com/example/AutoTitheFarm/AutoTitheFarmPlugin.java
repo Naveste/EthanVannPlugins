@@ -398,11 +398,7 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (getRegularCansCount() < (getAllRegularWateringCan().result().size() * REGULAR_WATERING_CAN_MAX_CHARGES)) {
-                // getRegularCansCount() is technically unneeded, but is put here as an extra failsafe.
-                if (regularWateringCansToRefill.isEmpty()) {
-                    return;
-                }
+            if (getRegularCansCount() != -1 && getRegularCansCount() < (getAllRegularWateringCan().result().size() * REGULAR_WATERING_CAN_MAX_CHARGES)) {
                 log.info("Need to refill regular cans");
                 regularWateringCansToRefill.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
                 return;
@@ -584,6 +580,9 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private int getRegularCansCount() {
+        if (isGricollersCanFound()) {
+            return -1;
+        }
         int stack = 0;
         Pattern pattern = Pattern.compile("<col=ff9040>Watering can\\((\\d+)\\)</col>");
         for (Widget itm : getAllRegularWateringCan().result()) {
