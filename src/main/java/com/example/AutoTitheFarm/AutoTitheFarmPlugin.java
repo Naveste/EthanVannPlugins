@@ -121,7 +121,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private int[][] patchLayout;
 
-    private int waterChargesCountUsed;
+    private int gricollersChargesUsed;
 
     private int randomCount;
 
@@ -206,8 +206,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         return Inventory.search().nameContains("seed").first().orElse(null);
     }
 
-    private boolean isNeedToRefillWateringCan() {
-        return randomCount == waterChargesCountUsed || waterChargesCountUsed > randomCount;
+    private boolean isNeedToRefillGricollersCan() {
+        return randomCount == gricollersChargesUsed || gricollersChargesUsed > randomCount;
     }
 
     public boolean startingNewRun() {
@@ -380,7 +380,7 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (isGricollersCanFound && isNeedToRefillWateringCan()) {
+            if (isGricollersCanFound && isNeedToRefillGricollersCan()) {
                 log.info("Need to refill Gricoller's can");
                 useItemOnObject(getAppropriateWateringCan(), waterBarrel.orElse(null));
                 return;
@@ -611,13 +611,13 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void onChatMessage(ChatMessage event) {
         String message = event.getMessage();
 
-        if (message.contains("Watering can charges") && !isNeedToRefillWateringCan()) {
-            waterChargesCountUsed = getGricollersCanCount(message);
+        if (message.contains("Watering can charges") && !isNeedToRefillGricollersCan()) {
+            gricollersChargesUsed = getGricollersCanCount(message);
         }
 
         if (message.contains("You fill the watering can")) {
             randomCount = getRandomCount();
-            waterChargesCountUsed = 0;
+            gricollersChargesUsed = 0;
         }
 
         if (message.contains("can is already full")) {
