@@ -133,6 +133,8 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private boolean pluginJustEnabled;
 
+    private int runEnergyDeviation;
+
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
@@ -140,6 +142,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         randomCount = getRandomCount();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
         pluginJustEnabled = true;
+        runEnergyDeviation = RandomUtils.nextInt(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10);
     }
 
     private void resetValues() {
@@ -405,7 +408,9 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            if (runEnergy <= config.minRunEnergyToIdleUnder()) {
+            // whether to trigger earlier if running.
+            int runEnergyExtraDeviation = EthanApiPlugin.isMoving() ? runEnergyDeviation + 5 : runEnergyDeviation;
+            if (runEnergy <= runEnergyExtraDeviation) {
                 needToRestoreRunEnergy = true;
             }
 
