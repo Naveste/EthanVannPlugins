@@ -123,7 +123,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private int gricollersChargesUsed;
 
-    private int randomCount;
+    private int randomCount = 1;
 
     private boolean foundBlightedPlant;
 
@@ -149,12 +149,10 @@ public class AutoTitheFarmPlugin extends Plugin {
         thirdPhaseObjectsToFocus.clear();
         fourthPhaseObjectsToFocus.clear();
         waitForAction = false;
-        randomCount = 0;
         needToRestoreRunEnergy = false;
         defaultStartingPos = null;
         pluginJustEnabled = false;
         lastActionTimer = 0;
-        gricollersChargesUsed = 0;
     }
 
     private boolean pluginStartedDuringARun() {
@@ -243,8 +241,11 @@ public class AutoTitheFarmPlugin extends Plugin {
             case 151: worldPoint = playerLocation.dx(-1).dy(-2); break;
             case 360: worldPoint = playerLocation.dx(-2).dy(-1); break;
             case 663: worldPoint = playerLocation.dx(-2).dy(1); break;
+            case 872: worldPoint = playerLocation.dx(-1).dy(2); break;
+            case 1176: worldPoint = playerLocation.dx(1).dy(2); break;
             case 1385: worldPoint = playerLocation.dx(2).dy(1); break;
             case 1688: worldPoint = playerLocation.dx(2).dy(-1); break;
+            case 1897: worldPoint = playerLocation.dx(1).dy(-2); break;
             default: worldPoint = null;
         }
 

@@ -37,7 +37,7 @@ public interface AutoTitheFarmConfig extends Config {
             section = SETUP
     )
     default PatchLayout patchLayout() {
-        return PatchLayout.LOW_PING_LAYOUT;
+        return PatchLayout.REGULAR_LAYOUT;
     }
 
     @ConfigItem(
