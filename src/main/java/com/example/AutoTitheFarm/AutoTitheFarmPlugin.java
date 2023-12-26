@@ -167,12 +167,18 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private boolean gotRequiredItems() {
+        int regularCansNeeded = totalAmountOfPatches == 25 ? 10 : 9;
         Optional<Widget> seedDibber = Inventory.search().withId(ItemID.SEED_DIBBER).first();
         Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
-        boolean canCheck = isGricollersCanFound() || getAllRegularWateringCan().result().size() >= 9;
+        boolean canCheck = isGricollersCanFound() || getAllRegularWateringCan().result().size() >= regularCansNeeded;
 
-        // generalized and crude checks for now.
-        return canCheck && seedDibber.isPresent() && spade.isPresent() && getSeed() != null;
+        if (canCheck && seedDibber.isPresent() && spade.isPresent() && getSeed() != null) {
+            return true;
+        }
+        sendClientMessage("Starting requirements not met. " +
+                "Please make sure you have all the required items in the inventory: spade, seed dibber, " +
+                "at least " + regularCansNeeded + " regular watering cans, or gricoller's can.");
+        return false;
     }
 
     private String getObjectAction(TileObject object) {
@@ -500,8 +506,6 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (!gotRequiredItems()) {
-            sendClientMessage("Starting requirements not met. " +
-                    "Please make sure you have all the required items in the inventory: spade, seed dibber, at least 9 regular watering cans, or gricoller's can.");
             stopPlugin(this);
             return;
         }
