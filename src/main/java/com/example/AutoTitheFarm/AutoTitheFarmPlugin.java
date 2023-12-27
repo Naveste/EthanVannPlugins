@@ -135,14 +135,16 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private int runEnergyDeviation;
 
+    private final IntegerRandomizer randomCanCount = new IntegerRandomizer(2, 9);
+
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
         defaultStartingPos = config.patchLayout().getStartingPoint();
-        randomCount = getRandomCount();
+        randomCount = randomCanCount.getRandomInteger();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
         pluginJustEnabled = true;
-        runEnergyDeviation = RandomUtils.nextInt(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10);
+        runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
     }
 
     private void resetValues() {
@@ -156,6 +158,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         defaultStartingPos = null;
         pluginJustEnabled = false;
         lastActionTimer = 0;
+        randomCanCount.getOldValues().clear();
     }
 
     private boolean pluginStartedDuringARun() {
@@ -191,10 +194,6 @@ public class AutoTitheFarmPlugin extends Plugin {
             getAction = action;
         }
         return getAction;
-    }
-
-    private int getRandomCount() {
-        return RandomUtils.nextInt(2, 9);
     }
 
     private ItemQuery getAllRegularWateringCan() {
@@ -498,6 +497,9 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
+        log.info("List size: " + randomCanCount.getOldValues().size());
+        log.info("Refill can at amount: " + randomCount);
+        log.info(String.valueOf(runEnergyDeviation));
         getLastActionTimer();
 
         if (!isInsideTitheFarm()) {
@@ -632,12 +634,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (message.contains("You fill the watering can")) {
-            randomCount = getRandomCount();
+            randomCount = randomCanCount.getRandomInteger();
             gricollersChargesUsed = 0;
         }
 
         if (message.contains("can is already full")) {
-            randomCount = getRandomCount();
+            randomCount = randomCanCount.getRandomInteger();
         }
     }
 
