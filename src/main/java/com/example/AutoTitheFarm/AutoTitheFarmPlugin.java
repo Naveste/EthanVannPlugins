@@ -144,6 +144,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         randomCount = randomCanCount.getRandomInteger();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
         pluginJustEnabled = true;
+        // IntegerRandomizer is only useful when a random integer is looked for more frequently. In this case it isnt, but is still used.
         runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
     }
 
@@ -174,8 +175,9 @@ public class AutoTitheFarmPlugin extends Plugin {
         Optional<Widget> seedDibber = Inventory.search().withId(ItemID.SEED_DIBBER).first();
         Optional<Widget> spade = Inventory.search().withId(ItemID.SPADE).first();
         boolean canCheck = isGricollersCanFound() || getAllRegularWateringCan().result().size() >= regularCansNeeded;
+        boolean mainCondition = canCheck && seedDibber.isPresent() && spade.isPresent();
 
-        if (canCheck && seedDibber.isPresent() && spade.isPresent() && getSeed() != null) {
+        if (isInsideTitheFarm() ? mainCondition && getSeed() != null : mainCondition) {
             return true;
         }
         sendClientMessage("Starting requirements not met. " +
@@ -214,7 +216,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private boolean isGricollersCanFound() {
-        return getAppropriateWateringCan().getName().contains("Gricoller's");
+        return getAppropriateWateringCan() != null && getAppropriateWateringCan().getName().contains("Gricoller's");
     }
 
     private boolean isNeedToRefillGricollersCan() {
@@ -502,13 +504,13 @@ public class AutoTitheFarmPlugin extends Plugin {
         log.info(String.valueOf(runEnergyDeviation));
         getLastActionTimer();
 
-        if (!isInsideTitheFarm()) {
-            handleLobby();
+        if (!gotRequiredItems()) {
+            stopPlugin(this);
             return;
         }
 
-        if (!gotRequiredItems()) {
-            stopPlugin(this);
+        if (!isInsideTitheFarm()) {
+            handleLobby();
             return;
         }
 
