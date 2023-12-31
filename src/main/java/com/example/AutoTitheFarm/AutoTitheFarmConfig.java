@@ -64,7 +64,7 @@ public interface AutoTitheFarmConfig extends Config {
 
     @ConfigItem(
             keyName = "StopIfReachedFruitAmountFarmed",
-            name = "Stop plugin upon meeting criterion below",
+            name = "Enable stop condition below",
             description = " ",
             position = 2,
             section = MISC
