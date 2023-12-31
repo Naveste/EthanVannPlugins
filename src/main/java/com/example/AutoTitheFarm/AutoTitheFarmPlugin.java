@@ -371,12 +371,11 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
-            dePopulateList(firstPhaseObjectsToFocus);
-            dePopulateList(secondPhaseObjectsToFocus);
-            dePopulateList(thirdPhaseObjectsToFocus);
-            dePopulateList(fourthPhaseObjectsToFocus);
-        }
+        dePopulateList(firstPhaseObjectsToFocus);
+        dePopulateList(secondPhaseObjectsToFocus);
+        dePopulateList(thirdPhaseObjectsToFocus);
+        dePopulateList(fourthPhaseObjectsToFocus);
+
 
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
         if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && waitForAction) {
@@ -460,7 +459,9 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void dePopulateList(List<TileObject> list) {
-        list.removeIf(tileObject -> playerDirection() != null && playerDirection().equals(tileObject.getWorldLocation()));
+        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
+            list.removeIf(tileObject -> playerDirection() != null && playerDirection().equals(tileObject.getWorldLocation()));
+        }
     }
 
     private void handleLobby() {
