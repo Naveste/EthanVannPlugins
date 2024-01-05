@@ -500,9 +500,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
-        log.info("List size: " + randomCanCount.getOldValues().size());
-        log.info("Refill can at amount: " + randomCount);
-        log.info(String.valueOf(runEnergyDeviation));
         getLastActionTimer();
 
         if (!gotRequiredItems()) {
@@ -645,7 +642,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             randomCount = randomCanCount.getRandomInteger();
         }
 
-        if (message.contains("Congratulations") && waitForAction) {
+        if (message.contains("Congratulations") && waitForAction && client.getVarbitValue(Varbits.DISABLE_LEVEL_UP_INTERFACE) == 0) {
             waitForAction = false;
         }
     }
