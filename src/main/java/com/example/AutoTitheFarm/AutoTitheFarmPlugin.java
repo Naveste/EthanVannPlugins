@@ -644,6 +644,10 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (message.contains("can is already full")) {
             randomCount = randomCanCount.getRandomInteger();
         }
+
+        if (message.contains("Congratulations") && waitForAction) {
+            waitForAction = false;
+        }
     }
 
     @Subscribe
