@@ -482,7 +482,11 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         if (getSeed() == null) {
             if (secondChatWindowId.isPresent()) {
-                client.setVarcStrValue(VarClientStr.INPUT_TEXT, Integer.toString(10000));
+                final String MAX_SEEDS = Integer.toString(10000);
+                if (!client.getVarcStrValue(VarClientStr.INPUT_TEXT).equals(MAX_SEEDS)) {
+                    client.setVarcStrValue(VarClientStr.INPUT_TEXT, MAX_SEEDS);
+                    return;
+                }
 
                 KeyEvent keyPress = new KeyEvent(client.getCanvas(), KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER);
                 client.getCanvas().dispatchEvent(keyPress);
