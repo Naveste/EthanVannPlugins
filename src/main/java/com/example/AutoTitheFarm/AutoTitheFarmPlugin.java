@@ -28,7 +28,6 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import org.apache.commons.lang3.RandomUtils;
 
 import javax.inject.Inject;
 import java.awt.event.KeyEvent;
@@ -140,7 +139,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
-        defaultStartingPos = config.patchLayout().getStartingPoint();
+        defaultStartingPos = isInsideTitheFarm() ? config.patchLayout().getStartingPoint() : null;
         randomCount = randomCanCount.getRandomInteger();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
         pluginJustEnabled = true;
@@ -354,6 +353,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         return currentSeed.equals(compareString);
     }
 
+    private void setDefaultStartingPosition() {
+        if (defaultStartingPos == null) {
+            defaultStartingPos = config.patchLayout().getStartingPoint();
+        }
+    }
+
     private void handleMinigame() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
@@ -361,6 +366,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         List<Widget> regularWateringCansToRefill = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
                 ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
                 ItemID.WATERING_CAN7)).result();
+
+        setDefaultStartingPosition();
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
             if (fruit.isEmpty()) {
