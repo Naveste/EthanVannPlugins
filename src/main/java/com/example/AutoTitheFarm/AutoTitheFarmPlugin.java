@@ -136,6 +136,10 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private final IntegerRandomizer randomCanCount = new IntegerRandomizer(2, 9);
 
+    private EquipmentHandler farmers;
+
+    private EquipmentHandler graceful;
+
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
@@ -145,6 +149,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         pluginJustEnabled = true;
         // IntegerRandomizer is only useful when a random integer is looked for more frequently. In this case it isnt, but is still used.
         runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
+        farmers = new EquipmentHandler("Farmer's", config);
+        graceful = new EquipmentHandler("Graceful", config);
     }
 
     private void resetValues() {
@@ -290,7 +296,10 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (waitForAction) {
             return;
         }
-        optionalWidget.ifPresent(itm -> ObjectPackets.queueWidgetOnTileObject(itm, tileObject));
+        optionalWidget.ifPresent(itm -> {
+            MousePackets.queueClickPacket();
+            ObjectPackets.queueWidgetOnTileObject(itm, tileObject);
+        });
         waitForAction = true;
     }
 
@@ -383,7 +392,6 @@ public class AutoTitheFarmPlugin extends Plugin {
         dePopulateList(thirdPhaseObjectsToFocus);
         dePopulateList(fourthPhaseObjectsToFocus);
 
-
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
         if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && waitForAction) {
             waitForAction = false;
@@ -397,6 +405,11 @@ public class AutoTitheFarmPlugin extends Plugin {
             isHarvestingPhase = false;
             foundBlightedPlant = false;
             pluginJustEnabled = false;
+
+            if (graceful.isInInventory()) {
+                graceful.gearSwitch();
+                return;
+            }
 
             // in case we've for whatever reason used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
             if (getSeed().getItemQuantity() < 100) {
@@ -417,7 +430,10 @@ public class AutoTitheFarmPlugin extends Plugin {
 
             if (getRegularCansCount() != -1 && getRegularCansCount() < (getAllRegularWateringCan().result().size() * REGULAR_WATERING_CAN_MAX_CHARGES)) {
                 log.info("Need to refill regular cans");
-                regularWateringCansToRefill.forEach(itm -> ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null)));
+                regularWateringCansToRefill.forEach(itm -> {
+                    MousePackets.queueClickPacket();
+                    ObjectPackets.queueWidgetOnTileObject(itm, waterBarrel.orElse(null));
+                });
                 return;
             }
 
@@ -455,11 +471,20 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         List<List<TileObject>> phases = List.of(secondPhaseObjectsToFocus, thirdPhaseObjectsToFocus, fourthPhaseObjectsToFocus);
         for (List<TileObject> phase : phases) {
+            List<TileObject> lastPhase = phases.get(phases.size() - 1);
+
             if (phase.isEmpty()) {
                 continue;
             }
+
+            if (phase == lastPhase && farmers.isInInventory()) {
+                farmers.gearSwitch();
+                return;
+            }
+
             doAction(phase);
-            if (phase != phases.get(phases.size() - 1)) {
+
+            if (phase != lastPhase) {
                 return;
             }
         }
