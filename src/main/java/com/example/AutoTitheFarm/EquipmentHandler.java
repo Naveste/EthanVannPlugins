@@ -10,6 +10,8 @@ import java.util.List;
 @Slf4j
 public class EquipmentHandler {
 
+    AutoTitheFarmPlugin plugin;
+
     AutoTitheFarmConfig config;
 
     private final String gearName;
@@ -17,10 +19,11 @@ public class EquipmentHandler {
     private final String action;
 
 
-    public EquipmentHandler(String gearName, AutoTitheFarmConfig config) {
+    public EquipmentHandler(String gearName, AutoTitheFarmConfig config, AutoTitheFarmPlugin plugin) {
         this.gearName = gearName;
         this.config = config;
         this.action = "Wear";
+        this.plugin = plugin;
     }
 
     private List<Widget> getGear() {
@@ -35,6 +38,9 @@ public class EquipmentHandler {
     }
 
     public void gearSwitch() {
+        if (plugin.isWaitForAction()) {
+            return;
+        }
         getGear().forEach(itm -> {
             InventoryInteraction.useItem(itm, this.action);
             log.info("Switching to: " + this.gearName);

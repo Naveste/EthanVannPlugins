@@ -62,26 +62,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     AutoTitheFarmOverlay overlay;
 
-    @Override
-    public void startUp() {
-        log.info("Plugin started");
-        overlay = new AutoTitheFarmOverlay(client, this, config);
-        overlayManager.add(overlay);
-        initValues();
-    }
-
-    @Override
-    public void shutDown() {
-        log.info("Plugin shutdown");
-        resetValues();
-        overlayManager.remove(overlay);
-    }
-
-    @Provides
-    public AutoTitheFarmConfig getConfig(ConfigManager configManager) {
-        return configManager.getConfig(AutoTitheFarmConfig.class);
-    }
-
     private static final int EMPTY_PATCH = 27383;
 
     private static final int WATERING_ANIMATION = 2293;
@@ -140,6 +120,26 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private EquipmentHandler graceful;
 
+    @Override
+    public void startUp() {
+        log.info("Plugin started");
+        overlay = new AutoTitheFarmOverlay(client, this, config);
+        overlayManager.add(overlay);
+        initValues();
+    }
+
+    @Override
+    public void shutDown() {
+        log.info("Plugin shutdown");
+        resetValues();
+        overlayManager.remove(overlay);
+    }
+
+    @Provides
+    public AutoTitheFarmConfig getConfig(ConfigManager configManager) {
+        return configManager.getConfig(AutoTitheFarmConfig.class);
+    }
+
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
@@ -149,8 +149,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         pluginJustEnabled = true;
         // IntegerRandomizer is only useful when a random integer is looked for more frequently. In this case it isnt, but is still used.
         runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
-        farmers = new EquipmentHandler("Farmer's", config);
-        graceful = new EquipmentHandler("Graceful", config);
+        farmers = new EquipmentHandler("Farmer's", config, this);
+        graceful = new EquipmentHandler("Graceful", config, this);
     }
 
     private void resetValues() {
