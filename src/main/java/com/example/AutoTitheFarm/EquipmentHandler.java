@@ -4,6 +4,7 @@ import com.example.EthanApiPlugin.Collections.Inventory;
 import com.example.InteractionApi.InventoryInteraction;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.util.Text;
 
 import java.util.List;
 
@@ -31,10 +32,7 @@ public class EquipmentHandler {
     }
 
     public boolean isInInventory() {
-        if (!config.switchGearDuringHarvestingPhase()) {
-            return false;
-        }
-        return !getGear().isEmpty();
+        return config.switchGearDuringHarvestingPhase() && !getGear().isEmpty();
     }
 
     public void gearSwitch() {
@@ -43,7 +41,7 @@ public class EquipmentHandler {
         }
         getGear().forEach(itm -> {
             InventoryInteraction.useItem(itm, this.action);
-            log.info("Switching to: " + this.gearName);
+            log.info("Equipping " + Text.removeTags(itm.getName()));
         });
     }
 }
