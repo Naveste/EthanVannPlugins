@@ -12,7 +12,6 @@ public class ActionDelayHandler {
 
     private boolean waitForAction;
 
-
     private int lastActionTimer;
 
     @Inject
@@ -20,7 +19,7 @@ public class ActionDelayHandler {
     }
 
     public void handleLastActionTimer() {
-        if (this.isWaitForAction()) {
+        if (this.waitForAction) {
             this.lastActionTimer++;
         } else {
             this.lastActionTimer = 0;
