@@ -106,8 +106,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private boolean foundBlightedPlant;
 
-    private int lastActionTimer;
-
     private WorldPoint defaultStartingPos;
 
     private boolean pluginJustEnabled;
@@ -163,7 +161,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         needToRestoreRunEnergy = false;
         defaultStartingPos = null;
         pluginJustEnabled = false;
-        lastActionTimer = 0;
+        actionDelayHandler.setLastActionTimer(0);
         randomCanCount.getOldValues().clear();
     }
 
@@ -328,14 +326,6 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
     }
 
-    private void getLastActionTimer() {
-        if (actionDelayHandler.isWaitForAction()) {
-            lastActionTimer++;
-        } else {
-            lastActionTimer = 0;
-        }
-    }
-
     private boolean isCurrentSeedMatchingFarmingLevel() {
         String currentSeed;
         Pattern pattern = Pattern.compile("<col=ff9040>(\\w+)");
@@ -393,7 +383,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         dePopulateList(fourthPhaseObjectsToFocus);
 
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
+        if (actionDelayHandler.getLastActionTimer() > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
             actionDelayHandler.setWaitForAction(false);
         }
 
@@ -536,7 +526,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
-        getLastActionTimer();
+        actionDelayHandler.handleLastActionTimer();
 
         if (!gotRequiredItems()) {
             stopPlugin(this);

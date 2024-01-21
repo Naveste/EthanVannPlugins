@@ -6,13 +6,24 @@ import lombok.Setter;
 
 import javax.inject.Inject;
 
+@Getter(AccessLevel.PACKAGE)
+@Setter(AccessLevel.PACKAGE)
 public class ActionDelayHandler {
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
     private boolean waitForAction;
+
+
+    private int lastActionTimer;
 
     @Inject
     private ActionDelayHandler() {
+    }
+
+    public void handleLastActionTimer() {
+        if (this.isWaitForAction()) {
+            this.lastActionTimer++;
+        } else {
+            this.lastActionTimer = 0;
+        }
     }
 }
