@@ -60,6 +60,9 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Inject
     private ClientThread clientThread;
 
+    @Inject
+    private ActionDelayHandler actionDelayHandler;
+
     AutoTitheFarmOverlay overlay;
 
     private static final int EMPTY_PATCH = 27383;
@@ -85,9 +88,6 @@ public class AutoTitheFarmPlugin extends Plugin {
     private final List<TileObject> thirdPhaseObjectsToFocus = new ArrayList<>();
 
     private final List<TileObject> fourthPhaseObjectsToFocus = new ArrayList<>();
-
-    @Getter(AccessLevel.PACKAGE)
-    private boolean waitForAction;
 
     private boolean isHarvestingPhase;
 
@@ -123,7 +123,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Override
     public void startUp() {
         log.info("Plugin started");
-        overlay = new AutoTitheFarmOverlay(client, this, config);
+        overlay = new AutoTitheFarmOverlay(client, this, config, actionDelayHandler);
         overlayManager.add(overlay);
         initValues();
     }
@@ -149,8 +149,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         pluginJustEnabled = true;
         // IntegerRandomizer is only useful when a random integer is looked for more frequently. In this case it isnt, but is still used.
         runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
-        farmers = new EquipmentHandler("Farmer's", config, this);
-        graceful = new EquipmentHandler("Graceful", config, this);
+        farmers = new EquipmentHandler("Farmer's", config, actionDelayHandler);
+        graceful = new EquipmentHandler("Graceful", config, actionDelayHandler);
     }
 
     private void resetValues() {
@@ -159,7 +159,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         secondPhaseObjectsToFocus.clear();
         thirdPhaseObjectsToFocus.clear();
         fourthPhaseObjectsToFocus.clear();
-        waitForAction = false;
+        actionDelayHandler.setWaitForAction(false);
         needToRestoreRunEnergy = false;
         defaultStartingPos = null;
         pluginJustEnabled = false;
@@ -240,11 +240,11 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void openFarmDoor() {
-        if (waitForAction) {
+        if (actionDelayHandler.isWaitForAction()) {
             return;
         }
         TileObjects.search().nameContains("Farm door").first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Open"));
-        waitForAction = true;
+        actionDelayHandler.setWaitForAction(true);
     }
 
     private WorldPoint playerDirection() {
@@ -282,25 +282,25 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void doAction(List<TileObject> collection) {
         TileObject patch = collection.get(0);
         //log.info("Wait for action: " + waitForAction);
-        if (waitForAction) {
+        if (actionDelayHandler.isWaitForAction()) {
             return;
         }
         TileObjectInteraction.interact(patch, "Water", "Harvest");
-        waitForAction = true;
+        actionDelayHandler.setWaitForAction(true);
         log.info(getObjectAction(patch) + "ing");
     }
 
     private void useItemOnObject(Widget widget, TileObject tileObject) {
         //log.info("Wait for action: " + waitForAction);
         Optional<Widget> optionalWidget = Optional.of(widget);
-        if (waitForAction) {
+        if (actionDelayHandler.isWaitForAction()) {
             return;
         }
         optionalWidget.ifPresent(itm -> {
             MousePackets.queueClickPacket();
             ObjectPackets.queueWidgetOnTileObject(itm, tileObject);
         });
-        waitForAction = true;
+        actionDelayHandler.setWaitForAction(true);
     }
 
     private void captureEmptyPatches() {
@@ -329,7 +329,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void getLastActionTimer() {
-        if (waitForAction) {
+        if (actionDelayHandler.isWaitForAction()) {
             lastActionTimer++;
         } else {
             lastActionTimer = 0;
@@ -393,8 +393,8 @@ public class AutoTitheFarmPlugin extends Plugin {
         dePopulateList(fourthPhaseObjectsToFocus);
 
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && waitForAction) {
-            waitForAction = false;
+        if (lastActionTimer > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
+            actionDelayHandler.setWaitForAction(false);
         }
 
         if (runEnergy == 100) {
@@ -568,7 +568,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         if (animationId == -1 && (!isInsideTitheFarm() || startingNewRun())) {
-            waitForAction = false;
+            actionDelayHandler.setWaitForAction(false);
         }
     }
 
@@ -589,7 +589,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         Plants plant = Plants.getNeededPlant();
 
         if (gameObject.getWorldLocation().equals(playerDirection()) || startingNewRun()) {
-            waitForAction = false;
+            actionDelayHandler.setWaitForAction(false);
         }
 
         if (objectId == plant.getFirstStageId()) {
@@ -609,7 +609,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         }
 
         foundBlightedPlant = true;
-        waitForAction = false;
+        actionDelayHandler.setWaitForAction(false);
 
         for (List<TileObject> list : lists) {
             removeObjectFromListIfBlighted(list, gameObject);
@@ -678,8 +678,8 @@ public class AutoTitheFarmPlugin extends Plugin {
             randomCount = randomCanCount.getRandomInteger();
         }
 
-        if (message.contains("Congratulations") && waitForAction && client.getVarbitValue(Varbits.DISABLE_LEVEL_UP_INTERFACE) == 0) {
-            waitForAction = false;
+        if (message.contains("Congratulations") && actionDelayHandler.isWaitForAction() && client.getVarbitValue(Varbits.DISABLE_LEVEL_UP_INTERFACE) == 0) {
+            actionDelayHandler.setWaitForAction(false);
         }
     }
 

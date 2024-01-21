@@ -11,7 +11,7 @@ import java.util.List;
 @Slf4j
 public class EquipmentHandler {
 
-    AutoTitheFarmPlugin plugin;
+    ActionDelayHandler actionDelayHandler;
 
     AutoTitheFarmConfig config;
 
@@ -20,11 +20,11 @@ public class EquipmentHandler {
     private final String action;
 
 
-    public EquipmentHandler(String gearName, AutoTitheFarmConfig config, AutoTitheFarmPlugin plugin) {
+    public EquipmentHandler(String gearName, AutoTitheFarmConfig config, ActionDelayHandler actionDelayHandler) {
         this.gearName = gearName;
         this.config = config;
         this.action = "Wear";
-        this.plugin = plugin;
+        this.actionDelayHandler = actionDelayHandler;
     }
 
     private List<Widget> getGear() {
@@ -36,7 +36,7 @@ public class EquipmentHandler {
     }
 
     public void gearSwitch() {
-        if (plugin.isWaitForAction()) {
+        if (actionDelayHandler.isWaitForAction()) {
             return;
         }
         getGear().forEach(itm -> {
