@@ -361,6 +361,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void handleMinigame() {
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
+        final boolean isRunEnabled = client.getVarpValue(173) == 1;
         Optional<Widget> fruit = Inventory.search().nameContains("fruit").first();
         List<Widget> regularWateringCansToRefill = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
                 ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
@@ -385,6 +386,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
         if (actionDelayHandler.getLastActionTimer() > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
             actionDelayHandler.setWaitForAction(false);
+        }
+
+        if (runEnergy > 0 && !isRunEnabled) {
+            MousePackets.queueClickPacket();
+            WidgetPackets.queueWidgetActionPacket(1, 10485787, -1, -1);
+            return;
         }
 
         if (runEnergy == 100) {
@@ -681,6 +688,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             case CONNECTION_LOST:
             case LOGIN_SCREEN:
             case LOGIN_SCREEN_AUTHENTICATOR: stopPlugin(this); break;
+            default: //
         }
     }
 
