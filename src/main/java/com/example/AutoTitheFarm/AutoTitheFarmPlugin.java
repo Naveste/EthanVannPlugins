@@ -61,9 +61,9 @@ public class AutoTitheFarmPlugin extends Plugin {
     private ClientThread clientThread;
 
     @Inject
-    private ActionDelayHandler actionDelayHandler;
+    ActionDelayHandler actionDelayHandler;
 
-    AutoTitheFarmOverlay overlay;
+    private AutoTitheFarmOverlay overlay;
 
     private static final int EMPTY_PATCH = 27383;
 
@@ -114,8 +114,10 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     private final IntegerRandomizer randomCanCount = new IntegerRandomizer(2, 9);
 
+    @Inject
     private EquipmentHandler farmers;
 
+    @Inject
     private EquipmentHandler graceful;
 
     @Override
@@ -141,14 +143,15 @@ public class AutoTitheFarmPlugin extends Plugin {
     private void initValues() {
         setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
+        totalAmountOfPatches = patchLayout.length;
         defaultStartingPos = isInsideTitheFarm() ? config.patchLayout().getStartingPoint() : null;
         randomCount = randomCanCount.getRandomInteger();
         clientThread.invoke(() -> Inventory.search().withId(ItemID.GRICOLLERS_CAN).first().ifPresent(itm -> InventoryInteraction.useItem(itm, "Check")));
         pluginJustEnabled = true;
         // IntegerRandomizer is only useful when a random integer is looked for more frequently. In this case it isnt, but is still used.
         runEnergyDeviation = new IntegerRandomizer(config.minRunEnergyToIdleUnder(), config.minRunEnergyToIdleUnder() + 10).getRandomInteger();
-        farmers = new EquipmentHandler("Farmer's", config, actionDelayHandler);
-        graceful = new EquipmentHandler("Graceful", config, actionDelayHandler);
+        farmers.setGearName("Farmer's");
+        graceful.setGearName("Graceful");
     }
 
     private void resetValues() {
@@ -302,8 +305,6 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void captureEmptyPatches() {
-        totalAmountOfPatches = patchLayout.length;
-
         if (!emptyPatches.isEmpty()) {
             emptyPatches.clear();
         }
@@ -366,6 +367,12 @@ public class AutoTitheFarmPlugin extends Plugin {
         List<Widget> regularWateringCansToRefill = Inventory.search().idInList(List.of(ItemID.WATERING_CAN, ItemID.WATERING_CAN1,
                 ItemID.WATERING_CAN2, ItemID.WATERING_CAN3, ItemID.WATERING_CAN4, ItemID.WATERING_CAN5, ItemID.WATERING_CAN6,
                 ItemID.WATERING_CAN7)).result();
+        Optional<Widget> gricollersFertiliser = Inventory.search().withId(ItemID.GRICOLLERS_FERTILISER).first();
+
+        if (gricollersFertiliser.isPresent()) {
+            InventoryInteraction.useItem(gricollersFertiliser.get(), "Drop");
+            return;
+        }
 
         setDefaultStartingPosition();
 
