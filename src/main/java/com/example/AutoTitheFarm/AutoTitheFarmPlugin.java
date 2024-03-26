@@ -45,7 +45,7 @@ import static com.example.PacketUtils.PacketReflection.client;
 @PluginDependency(PacketUtilsPlugin.class)
 @PluginDependency(EthanApiPlugin.class)
 @PluginDescriptor(name =
-        "AutoTitheFarm",
+        "<html><font color=\"#00cbf2\">[L]</font> AutoTitheFarm<html>",
         description = "Will do Tithe Farm for you",
         enabledByDefault = false,
         tags = {""})
