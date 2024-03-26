@@ -63,6 +63,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Inject
     ActionDelayHandler actionDelayHandler;
 
+    @Inject
     private AutoTitheFarmOverlay overlay;
 
     private static final int EMPTY_PATCH = 27383;
@@ -123,7 +124,6 @@ public class AutoTitheFarmPlugin extends Plugin {
     @Override
     public void startUp() {
         log.info("Plugin started");
-        overlay = new AutoTitheFarmOverlay(client, this, config, actionDelayHandler);
         overlayManager.add(overlay);
         initValues();
     }
