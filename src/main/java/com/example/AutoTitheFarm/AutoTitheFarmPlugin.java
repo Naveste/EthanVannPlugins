@@ -385,9 +385,11 @@ public class AutoTitheFarmPlugin extends Plugin {
         dePopulateList(thirdPhaseObjectsToFocus);
         dePopulateList(fourthPhaseObjectsToFocus);
 
-        // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
-        if (actionDelayHandler.getLastActionTimer() > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
+        // if 5 ticks have passed and no any actions have been made within time limit then something went horribly wrong.
+        final boolean isPlayerMoving = EthanApiPlugin.isMoving() || client.getLocalPlayer().getAnimation() != -1;
+        if (actionDelayHandler.getLastActionTimer() > (startingNewRun() ? 2 : 5) && !isPlayerMoving && actionDelayHandler.isWaitForAction()) {
             actionDelayHandler.setWaitForAction(false);
+            log.info("Setting action delay to false");
         }
 
         if (gricollersFertiliser.isPresent()) {
