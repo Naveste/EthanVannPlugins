@@ -369,11 +369,6 @@ public class AutoTitheFarmPlugin extends Plugin {
                 ItemID.WATERING_CAN7)).result();
         Optional<Widget> gricollersFertiliser = Inventory.search().withId(ItemID.GRICOLLERS_FERTILISER).first();
 
-        if (gricollersFertiliser.isPresent()) {
-            InventoryInteraction.useItem(gricollersFertiliser.get(), "Drop");
-            return;
-        }
-
         setDefaultStartingPosition();
 
         if (!isCurrentSeedMatchingFarmingLevel()) {
@@ -393,6 +388,11 @@ public class AutoTitheFarmPlugin extends Plugin {
         // if 10 ticks have passed and no actions have been made within time limit then something went horribly wrong.
         if (actionDelayHandler.getLastActionTimer() > (startingNewRun() ? 2 : 10) && !EthanApiPlugin.isMoving() && actionDelayHandler.isWaitForAction()) {
             actionDelayHandler.setWaitForAction(false);
+        }
+
+        if (gricollersFertiliser.isPresent()) {
+            InventoryInteraction.useItem(gricollersFertiliser.get(), "Drop");
+            return;
         }
 
         if (runEnergy > 0 && !isRunEnabled) {
