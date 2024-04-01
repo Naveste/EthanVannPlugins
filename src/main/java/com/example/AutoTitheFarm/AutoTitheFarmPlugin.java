@@ -229,7 +229,7 @@ public class AutoTitheFarmPlugin extends Plugin {
         if (!isGricollersCanFound()) {
             return false;
         }
-        return randomCount == gricollersChargesUsed || gricollersChargesUsed > randomCount;
+        return gricollersChargesUsed >= randomCount;
     }
 
     public boolean startingNewRun() {
