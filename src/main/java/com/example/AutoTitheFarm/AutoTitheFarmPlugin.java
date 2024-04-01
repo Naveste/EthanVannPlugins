@@ -489,10 +489,6 @@ public class AutoTitheFarmPlugin extends Plugin {
             }
 
             doAction(phase);
-
-            if (phase != lastPhase) {
-                return;
-            }
         }
     }
 
