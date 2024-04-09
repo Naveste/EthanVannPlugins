@@ -360,6 +360,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void handleMinigame() {
+        Optional<Widget> staminaPot = Inventory.search().nameContains("Stamina").first();
         Optional<TileObject> waterBarrel = TileObjects.search().nameContains("Water Barrel").nearestToPlayer();
         int runEnergy = client.getEnergy() / 100;
         final boolean isRunEnabled = client.getVarpValue(173) == 1;
@@ -459,6 +460,11 @@ public class AutoTitheFarmPlugin extends Plugin {
                     MovementPackets.queueMovement(defaultStartingPos);
                     log.info("Moving to starting position");
                 }
+                return;
+            }
+
+            if (config.useStaminaPot() && staminaPot.isPresent() && runEnergy < 70 && client.getVarbitValue(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) == 0) {
+                InventoryInteraction.useItem(staminaPot.get(), "Drink");
                 return;
             }
         }
