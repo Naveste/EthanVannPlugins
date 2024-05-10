@@ -418,13 +418,8 @@ public class AutoTitheFarmPlugin extends Plugin {
                 return;
             }
 
-            // in case we've for whatever reason used almost all seeds. We shouldn't be close to the smallest amount either way... >_>
-            if (getSeed().getItemQuantity() < 100) {
-                stopPlugin(this);
-                return;
-            }
-
-            if (fruit.isPresent() && config.stopIfReachedFruitAmountFarmed() && fruit.get().getItemQuantity() >= config.maxFruitToFarm()) {
+            if ((getSeed().getItemQuantity() < 100) ||
+                    (fruit.isPresent() && config.stopIfReachedFruitAmountFarmed() && fruit.get().getItemQuantity() >= config.maxFruitToFarm())) {
                 stopPlugin(this);
                 return;
             }
@@ -465,6 +460,7 @@ public class AutoTitheFarmPlugin extends Plugin {
 
             if (config.useStaminaPot() && staminaPot.isPresent() && runEnergy < 70 && client.getVarbitValue(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) == 0) {
                 InventoryInteraction.useItem(staminaPot.get(), "Drink");
+                log.info("Drinking stamina potion");
                 return;
             }
         }
@@ -536,6 +532,7 @@ public class AutoTitheFarmPlugin extends Plugin {
                 TileObjects.search().withId(ObjectID.SEED_TABLE).first().ifPresent(obj -> TileObjectInteraction.interact(obj, "Search"));
                 return;
             }
+            MousePackets.queueClickPacket();
             WidgetPackets.queueResumePause(14352385, firstChatOptionId);
             return;
         }
