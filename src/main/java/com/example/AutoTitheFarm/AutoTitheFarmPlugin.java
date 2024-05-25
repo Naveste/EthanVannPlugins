@@ -143,7 +143,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void initValues() {
-        setFarmingLevel(34);
+        setFarmingLevel(getGetPlayerFarmingLevel());
         patchLayout = config.patchLayout().getLayout();
         totalAmountOfPatches = patchLayout.length;
         defaultStartingPos = isInsideTitheFarm() ? config.patchLayout().getStartingPoint() : null;
