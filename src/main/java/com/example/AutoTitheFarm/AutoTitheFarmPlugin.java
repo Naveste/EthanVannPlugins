@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 import static com.example.EthanApiPlugin.Collections.query.TileObjectQuery.getObjectComposition;
 import static com.example.EthanApiPlugin.EthanApiPlugin.sendClientMessage;
 import static com.example.EthanApiPlugin.EthanApiPlugin.stopPlugin;
-import static com.example.PacketUtils.PacketReflection.client;
 
 @Slf4j
 @PluginDependency(PacketUtilsPlugin.class)
@@ -50,6 +49,9 @@ import static com.example.PacketUtils.PacketReflection.client;
         enabledByDefault = false,
         tags = {""})
 public class AutoTitheFarmPlugin extends Plugin {
+
+    @Inject
+    private Client client;
 
     @Inject
     private OverlayManager overlayManager;
@@ -141,7 +143,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private void initValues() {
-        setFarmingLevel(getGetPlayerFarmingLevel());
+        setFarmingLevel(34);
         patchLayout = config.patchLayout().getLayout();
         totalAmountOfPatches = patchLayout.length;
         defaultStartingPos = isInsideTitheFarm() ? config.patchLayout().getStartingPoint() : null;
@@ -218,7 +220,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private Widget getSeed() {
-        return Inventory.search().nameContains("seed").first().orElse(null);
+        return Inventory.search().withName(Plants.getNeededPlant().getPlantName() + " seed").first().orElse(null);
     }
 
     private boolean isGricollersCanFound() {
@@ -273,7 +275,7 @@ public class AutoTitheFarmPlugin extends Plugin {
     }
 
     private boolean isInsideTitheFarm() {
-        if (client.isInInstancedRegion()) {
+        if (client.getTopLevelWorldView().getScene().isInstance()) {
             return true;
         }
         resetValues();
@@ -309,7 +311,7 @@ public class AutoTitheFarmPlugin extends Plugin {
             emptyPatches.clear();
         }
         for (int[] point : patchLayout) {
-            WorldPoint worldPoint = WorldPoint.fromScene(client, point[0], point[1], 0);
+            WorldPoint worldPoint = WorldPoint.fromScene(client.getTopLevelWorldView(), point[0], point[1], 0);
             TileObjects.search().withId(EMPTY_PATCH).atLocation(worldPoint).first().ifPresent(emptyPatches::add);
         }
     }
@@ -539,11 +541,19 @@ public class AutoTitheFarmPlugin extends Plugin {
         openFarmDoor();
     }
 
+    private boolean firstTimeEnteringTitheFarm() {
+        if (Widgets.search().withTextContains("Hey, young sir").first().isPresent()) {
+            sendClientMessage("You're entering the tithe farm for the first time. Please talk to the old man yourself.");
+            return true;
+        }
+        return false;
+    }
+
     @Subscribe
     private void onGameTick(GameTick event) {
         actionDelayHandler.handleLastActionTimer();
 
-        if (!gotRequiredItems()) {
+        if (!gotRequiredItems() || firstTimeEnteringTitheFarm()) {
             stopPlugin(this);
             return;
         }

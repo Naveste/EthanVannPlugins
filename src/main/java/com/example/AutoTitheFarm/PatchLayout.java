@@ -4,7 +4,7 @@ package com.example.AutoTitheFarm;
 import lombok.Getter;
 import net.runelite.api.coords.WorldPoint;
 
-import static com.example.PacketUtils.PacketReflection.client;
+import static com.example.EthanApiPlugin.EthanApiPlugin.getClient;
 
 @Getter
 public enum PatchLayout {
@@ -23,7 +23,6 @@ public enum PatchLayout {
                     {69, 41}, {69, 35}, {59, 41}, {59, 44}, {59, 47}
     });
 
-
     private final int[] startingPoint;
 
     private final int[][] layout;
@@ -37,6 +36,6 @@ public enum PatchLayout {
         if (this.startingPoint.length == 0) {
             return null;
         }
-        return WorldPoint.fromScene(client, this.startingPoint[0], this.startingPoint[1], 0);
+        return WorldPoint.fromScene(getClient().getTopLevelWorldView(), this.startingPoint[0], this.startingPoint[1], 0);
     }
 }
