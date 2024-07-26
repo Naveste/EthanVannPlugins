@@ -530,8 +530,6 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
-        log.info("gricollersChargesUsed: {}", gricollersChargesUsed);
-        log.info("gricollersCanCountToRefillAt: {}", gricollersCanCountToRefillAt);
         actionDelayHandler.handleLastActionTimer();
 
         if (!gotRequiredItems() || isFirstTimeEnteringTitheFarm()) {
