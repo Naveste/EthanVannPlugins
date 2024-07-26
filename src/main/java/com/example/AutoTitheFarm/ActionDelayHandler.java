@@ -20,7 +20,7 @@ public class ActionDelayHandler {
     private ActionDelayHandler() {
     }
 
-    public void handleLastActionTimer() {
+    void handleLastActionTimer() {
         if (this.waitForAction) {
             this.lastActionTimer++;
         } else {
