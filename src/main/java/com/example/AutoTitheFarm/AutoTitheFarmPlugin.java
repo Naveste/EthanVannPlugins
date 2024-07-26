@@ -367,13 +367,13 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION) {
+        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
             dePopulateList(firstPhaseObjectsToFocus);
             dePopulateList(secondPhaseObjectsToFocus);
             dePopulateList(thirdPhaseObjectsToFocus);
+            // harvesting phase
+            dePopulateList(fourthPhaseObjectsToFocus);
         }
-        // harvesting phase
-        dePopulateList(fourthPhaseObjectsToFocus);
 
         // if 5 ticks have passed and no any actions have been made within time limit then something went horribly wrong.
         final boolean isPlayerMoving = EthanApiPlugin.isMoving() || client.getLocalPlayer().getAnimation() != -1;
@@ -532,6 +532,8 @@ public class AutoTitheFarmPlugin extends Plugin {
 
     @Subscribe
     private void onGameTick(GameTick event) {
+        log.info("gricollersChargesUsed: {}", gricollersChargesUsed);
+        log.info("gricollersCanCountToRefillAt: {}", gricollersCanCountToRefillAt);
         actionDelayHandler.handleLastActionTimer();
 
         if (!gotRequiredItems() || isFirstTimeEnteringTitheFarm()) {
