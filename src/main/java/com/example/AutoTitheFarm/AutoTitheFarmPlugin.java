@@ -367,12 +367,10 @@ public class AutoTitheFarmPlugin extends Plugin {
             return;
         }
 
-        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION || client.getLocalPlayer().getAnimation() == DIGGING_ANIMATION) {
+        if (client.getLocalPlayer().getAnimation() == WATERING_ANIMATION) {
             dePopulateList(firstPhaseObjectsToFocus);
             dePopulateList(secondPhaseObjectsToFocus);
             dePopulateList(thirdPhaseObjectsToFocus);
-            // harvesting phase
-            dePopulateList(fourthPhaseObjectsToFocus);
         }
 
         // if 5 ticks have passed and no any actions have been made within time limit then something went horribly wrong.
@@ -626,6 +624,11 @@ public class AutoTitheFarmPlugin extends Plugin {
 
         if (objectId == plant.getFourthStageId() && amountOfGrowingPatchesLeft() == 0) {
             isHarvestingPhase = true;
+        }
+
+        if (objectId == 27415) {
+            // harvesting phase
+            dePopulateList(fourthPhaseObjectsToFocus);
         }
     }
 
